@@ -61,6 +61,24 @@ namespace ForgeGame.UI.Smithy
 
         protected override void OnOpened()
         {
+            // No craft in progress? Pull the newest cast blank out of the inventory and
+            // start forging it. (Cast blanks are produced/stored by the foundry.)
+            if (!Controller.Session.HasActiveSession)
+            {
+                var blank = Controller.Inventory.TakeNewestCastBlank();
+                if (blank != null)
+                {
+                    var s = Controller.Session.StartNewSession();
+                    s.selectedMaterialId = blank.materialId;
+                    s.blueprintId = blank.blueprintId;
+                    s.meltQuality = blank.meltQuality;
+                    s.pourQuality = blank.pourQuality;
+                    s.castBlade = blank.blade;
+                    if (blank.defects != null) foreach (var d in blank.defects) s.AddDefect(d);
+                    Controller.Session.SetStage(ForgeStage.EdgeForging);
+                }
+            }
+
             if (Blade != null && (Session.currentStage == ForgeStage.CastBlankReady || Session.currentStage == ForgeStage.EdgeForging))
             {
                 if (Session.currentStage == ForgeStage.CastBlankReady)

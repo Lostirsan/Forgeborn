@@ -249,7 +249,9 @@ namespace ForgeGame.Smithy
         public void UpdateObjective()
         {
             if (hud == null) return;
-            string text = "Расплавьте бронзу в плавильне.";
+            string text = (inventory != null && inventory.CastBlanks.Count > 0)
+                ? "Отнесите заготовку к наковальне (или отлейте ещё в плавильне)."
+                : "Расплавьте бронзу в плавильне.";
             var s = sessionController != null ? sessionController.Current : null;
             if (s != null)
             {

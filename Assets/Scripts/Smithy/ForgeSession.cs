@@ -45,6 +45,8 @@ namespace ForgeGame.Smithy
         public float pourQualityWeightedSum;
         public float pouredAmountForQuality;
         public float lastPourRate;
+        public float remainingMetal = 1f; // crucible level, drains as it pours/spills
+        public float spilledMetal;         // total bronze that missed the mould (quality penalty)
 
         // The cast blade produced by the foundry and worked on the anvil.
         public CastBladeState castBlade;

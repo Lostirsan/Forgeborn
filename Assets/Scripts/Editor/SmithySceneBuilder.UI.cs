@@ -325,75 +325,103 @@ namespace ForgeGame.EditorTools
 
         private static void BuildFoundryPanel()
         {
-            var p = AddPanel<FoundryPanelController>(PanelId.Foundry, "Плавильня", new Vector2(1320, 900), out var w);
+            // Near-full-screen foundry with a wooden workbench skin.
+            var p = AddPanel<FoundryPanelController>(PanelId.Foundry, "Плавильня", new Vector2(1840, 1010), out var w, 0.9f, _uiWorkbench);
 
-            // ---- Melting group ----
-            var meltG = NewChild(w, "MeltingGroup", new Vector2(0, 20), new Vector2(1280, 780));
-            AddUiSprite(meltG, "Furnace", new Vector2(-330, 60), new Vector2(360, 460), _fFurnace, Color.white);
-            AddUiSprite(meltG, "Crucible", new Vector2(-330, -190), new Vector2(230, 230), _uiCrucible, Color.white);
-            var crucibleMolten = AddUiSprite(meltG, "CrucibleMolten", new Vector2(-330, -190), new Vector2(230, 230), _uiCrucibleMolten, new Color(0.3f, 0.14f, 0.08f, 1f));
-            var temp = AddLabel(meltG, "", 300, 230, 660, 50, 34, Accent, TextAlignmentOptions.Center);
-            var state = AddLabel(meltG, "", 300, 150, 660, 60, 44, TextLight, TextAlignmentOptions.Center);
-            var heat = AddButton(meltG, "Нагрев (держать)", 300, 20, 420, 90);
-            var heatRelay = heat.gameObject.AddComponent<PointerHoldRelay>();
-            var toPour = AddButton(meltG, "К заливке", 300, -110, 420, 74);
+            // ---- Left column: ore selection (extensible list) ----
+            AddLabel(w, "Руды", -650, 380, 320, 50, 34, Accent, TextAlignmentOptions.Center);
+            var materialsG = NewChild(w, "MaterialsGroup", new Vector2(-650, 20), new Vector2(360, 760));
+            var bronzeCard = AddButton(materialsG, "", 0, 220, 300, 320);
+            var brt = bronzeCard.GetComponent<RectTransform>();
+            AddSpriteChild(brt, "Icon", new Vector2(0, 46), new Vector2(170, 170), _uiCrucible);
+            AddLabel(brt, "Бронза", 0, -88, 260, 40, 30, TextLight, TextAlignmentOptions.Center);
+            AddLabel(brt, "Тугоплавкая, надёжная", 0, -128, 260, 30, 20, TextDim, TextAlignmentOptions.Center);
 
-            // ---- Mould group (shifted down to leave headroom for the pour crucible) ----
-            var mouldG = NewChild(w, "MouldGroup", new Vector2(0, -30), new Vector2(1280, 780));
-            AddUiSprite(mouldG, "MoldClosed", new Vector2(-220, -30), new Vector2(300, 540), _uiMoldClosed, Color.white);
-            // Sword-shaped mask with a molten fill that rises from the bottom.
-            var maskRt = NewChild(mouldG, "MoldMask", new Vector2(-220, -30), new Vector2(220, 500));
+            // ---- One unified foundry view: central hanging crucible + mould below it ----
+            var foundryG = NewChild(w, "FoundryGroup", new Vector2(140, 10), new Vector2(1500, 940));
+
+            // The crucible the player GRABS and TILTS (top-centre). Pivot near the spout so
+            // the lip moves believably. Melts the ore (gauge + molten fill), then pours.
+            // Upright pot while melting; it swaps to a forward-tilted OPEN-BOWL pose while
+            // pouring (metal down the centre into the mould below) — no sideways rotation.
+            var pourCrucible = AddUiSprite(foundryG, "Crucible", new Vector2(0, 170), new Vector2(430, 350), _uiCrucible, Color.white, true);
+            pourCrucible.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            var crucibleMolten = AddUiSprite(pourCrucible.rectTransform, "Molten", new Vector2(0, 6), new Vector2(280, 190), _uiCrucibleMolten, new Color(1f, 0.7f, 0.3f, 1f));
+            crucibleMolten.raycastTarget = false;
+            var pourOrigin = NewChild(pourCrucible.rectTransform, "PourOrigin", new Vector2(0, -140), new Vector2(12, 12));
+            var tilt = pourCrucible.gameObject.AddComponent<CrucibleTiltControl>();
+            WireComponent(tilt, so => { SetRef(so, "pivot", pourCrucible.rectTransform); SetRef(so, "pourOrigin", pourOrigin); });
+
+            // Melt gauge (readout) + needle, floated ABOVE the pot so it doesn't cover it.
+            var gauge = AddUiSprite(foundryG, "Gauge", new Vector2(0, 360), new Vector2(230, 135), _uiMeltGauge, Color.white);
+            gauge.raycastTarget = false;
+            var needleRt = NewChild(gauge.rectTransform, "Needle", new Vector2(0, -52), new Vector2(30, 128));
+            needleRt.pivot = new Vector2(0.5f, 0.05f);
+            var needleImg = needleRt.gameObject.AddComponent<Image>();
+            needleImg.sprite = _uiGaugeNeedle != null ? _uiGaugeNeedle : _white; needleImg.raycastTarget = false; needleImg.preserveAspect = true;
+
+            // Molten stream from the spout down into the mould (scaled/toggled while pouring).
+            var stream = AddUiSprite(foundryG, "Stream", new Vector2(0, -40), new Vector2(46, 300), _uiStream, Color.white);
+            var spill = AddUiSprite(foundryG, "SpillFlash", new Vector2(60, -170), new Vector2(190, 140), _uiSparks, new Color(1f, 0.55f, 0.2f, 0f));
+            spill.gameObject.SetActive(false);
+
+            // ---- Mould below (appears when pouring) ----
+            var mouldO = NewChild(foundryG, "Mould", new Vector2(0, -320), new Vector2(360, 560));
+            AddUiSprite(mouldO, "MoldClosed", new Vector2(0, 0), new Vector2(300, 540), _uiMoldClosed, Color.white);
+            AddUiSprite(mouldO, "Inlet", new Vector2(0, 250), new Vector2(90, 30), _white, new Color(1f, 0.8f, 0.4f, 0.18f));
+            var maskRt = NewChild(mouldO, "MoldMask", new Vector2(0, 0), new Vector2(220, 500));
             var maskImg = maskRt.gameObject.AddComponent<Image>();
-            maskImg.sprite = _uiMoldMask != null ? _uiMoldMask : _white;
-            maskImg.color = Color.white;
-            var mask = maskRt.gameObject.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            maskImg.sprite = _uiMoldMask != null ? _uiMoldMask : _white; maskImg.color = Color.white;
+            var mask = maskRt.gameObject.AddComponent<Mask>(); mask.showMaskGraphic = false;
             var fillRt = NewRect("MoltenFill", maskRt);
             fillRt.anchorMin = new Vector2(0f, 0f); fillRt.anchorMax = new Vector2(1f, 0f); fillRt.pivot = new Vector2(0.5f, 0f);
-            fillRt.anchoredPosition = Vector2.zero; fillRt.sizeDelta = new Vector2(0f, 0f);
+            fillRt.anchoredPosition = Vector2.zero; fillRt.sizeDelta = Vector2.zero;
             var fillImg = fillRt.gameObject.AddComponent<Image>();
-            fillImg.sprite = _uiMoldFill != null ? _uiMoldFill : _white;
-            fillImg.color = new Color(1f, 0.6f, 0.2f, 1f);
-            fillImg.raycastTarget = false;
-            // Tilted crucible seated over the funnel, pouring a visible stream into it.
-            var pourCrucible = AddUiSprite(mouldG, "PourCrucible", new Vector2(-150, 285), new Vector2(200, 160), _uiPourCrucible, Color.white);
-            var stream = AddUiSprite(mouldG, "Stream", new Vector2(-208, 120), new Vector2(44, 300), _uiStream, Color.white);
-            var castBlade = AddUiSprite(mouldG, "CastBlade", new Vector2(-160, -30), new Vector2(600, 200), _uiCastBlade, Color.white);
-            var pourStatus = AddLabel(mouldG, "", 320, 200, 640, 50, 30, Accent, TextAlignmentOptions.Center);
-            // Big invisible pour zone: hold, then drag right to increase the crucible tilt/flow.
-            var pourZone = AddUiSprite(mouldG, "PourZone", new Vector2(-220, 10), new Vector2(420, 640), _white, new Color(1f, 1f, 1f, 0f), true);
-            var pourRelay = pourZone.gameObject.AddComponent<PointerHoldRelay>();
-            var pourFinish = AddButton(mouldG, "Закрыть форму", 320, -180, 380, 74);
-            var extract = AddButton(mouldG, "Забрать заготовку", 320, -180, 380, 74);
+            fillImg.sprite = _uiMoldFill != null ? _uiMoldFill : _white; fillImg.color = new Color(1f, 0.6f, 0.2f, 1f); fillImg.raycastTarget = false;
+            var castBlade = AddUiSprite(mouldO, "CastBlade", new Vector2(40, 0), new Vector2(560, 190), _uiCastBlade, Color.white);
 
-            var status = AddLabel(w, "", 0, -350, 1160, 44, 24, TextDim, TextAlignmentOptions.Center);
-            var start = AddButton(w, "Начать плавку (3 бронзы)", 0, -400, 520, 74);
-            var back = AddButton(w, "Назад", 520, -400, 220, 60);
+            // Labels + action buttons (right side / bottom).
+            var state = AddLabel(foundryG, "", 470, 250, 560, 60, 40, TextLight, TextAlignmentOptions.Center);
+            var temp = AddLabel(foundryG, "", 470, 180, 560, 50, 30, Accent, TextAlignmentOptions.Center);
+            var pourStatus = AddLabel(foundryG, "", 470, 100, 620, 50, 28, Accent, TextAlignmentOptions.Center);
+            var pourFinish = AddButton(foundryG, "Закрыть форму", 470, -120, 380, 74);
+            var extract = AddButton(foundryG, "Забрать заготовку", 470, -120, 380, 74);
+
+            var status = AddLabel(w, "", 140, -430, 1300, 44, 24, TextDim, TextAlignmentOptions.Center);
+            var start = AddButton(w, "Начать плавку (3 бронзы)", 0, -430, 520, 74); // hidden; kept for wiring
+            var back = AddButton(w, "Назад", 780, -430, 200, 64);
 
             WireComponent(p, so =>
             {
-                SetRef(so, "meltingGroup", meltG.gameObject);
-                SetRef(so, "mouldGroup", mouldG.gameObject);
+                SetRef(so, "materialsGroup", materialsG.gameObject);
+                SetRef(so, "bronzeCard", bronzeCard);
+                SetRef(so, "foundryGroup", foundryG.gameObject);
+                SetRef(so, "mouldObject", mouldO.gameObject);
                 SetRef(so, "tempLabel", temp);
                 SetRef(so, "stateLabel", state);
                 SetRef(so, "statusLabel", status);
                 SetRef(so, "crucibleMoltenImage", crucibleMolten);
-                SetRef(so, "heatRelay", heatRelay);
+                SetRef(so, "crucibleMoltenPour", crucibleMolten);
+                SetRef(so, "crucibleImage", pourCrucible);
+                SetRef(so, "crucibleMeltSprite", _uiCrucible);
+                SetRef(so, "cruciblePourSprite", _uiPourCrucibleFwd);
+                SetRef(so, "gaugeObject", gauge.gameObject);
+                SetRef(so, "gaugeNeedle", needleRt);
                 SetRef(so, "startButton", start);
-                SetRef(so, "toPourButton", toPour);
-                SetRef(so, "pourRelay", pourRelay);
+                SetRef(so, "crucibleTilt", tilt);
+                SetRef(so, "spillFlash", spill);
                 SetRef(so, "pourFinishButton", pourFinish);
                 SetRef(so, "mouldFill", fillRt);
                 SetRef(so, "mouldFillImage", fillImg);
                 SetRef(so, "streamObject", stream.gameObject);
                 SetRef(so, "pourCrucible", pourCrucible.rectTransform);
                 SetRef(so, "pourStatus", pourStatus);
-                SetFloat(so, "mouldFillMaxHeight", 500f);
+                SetFloat(so, "mouldFillMaxHeight", 480f);
                 SetRef(so, "castBladeObject", castBlade.gameObject);
                 SetRef(so, "extractButton", extract);
                 SetRef(so, "backButton", back);
             });
-            FinishPanel(p, PanelId.Foundry, start.gameObject);
+            FinishPanel(p, PanelId.Foundry, bronzeCard.gameObject);
         }
 
         private static void BuildAnvilPanel()

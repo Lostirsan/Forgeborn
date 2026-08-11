@@ -48,8 +48,11 @@ namespace ForgeGame.EditorTools
         // Anvil section-grid overlay + foundry pour crucible + workbench panel skin.
         public const string BladeGrid = Dir + "/Foundry_BladeGrid.png";
         public const string PourCrucible = Dir + "/Foundry_PourCrucible.png";
+        public const string PourCrucibleFwd = Dir + "/Foundry_PourCrucibleFwd.png"; // tilted TOWARD player: open bowl pouring down centre
         public const string WorkbenchPanel = Dir + "/Foundry_WorkbenchPanel.png";
         public const string Tang = Dir + "/Foundry_Tang.png"; // metal rod the hilt is threaded onto
+        public const string MeltGauge = Dir + "/Foundry_MeltGauge.png";   // semicircular melt gauge (LOW→good→overheat)
+        public const string GaugeNeedle = Dir + "/Foundry_GaugeNeedle.png";
 
         private static readonly Color BronzeLo = new Color(0.42f, 0.26f, 0.12f);
         private static readonly Color BronzeMid = new Color(0.72f, 0.48f, 0.24f);
@@ -103,8 +106,11 @@ namespace ForgeGame.EditorTools
             Make(force, PommelRound, MakePommelRound);
             Make(force, BladeGrid, MakeBladeGrid);
             Make(force, PourCrucible, MakePourCrucible);
+            Make(force, PourCrucibleFwd, MakePourCrucibleForward);
             Make(force, WorkbenchPanel, MakeWorkbenchPanel);
             Make(force, Tang, MakeTang);
+            Make(force, MeltGauge, MakeMeltGauge);
+            Make(force, GaugeNeedle, MakeGaugeNeedle);
 
             AssetDatabase.Refresh();
         }
@@ -519,6 +525,69 @@ namespace ForgeGame.EditorTools
             c.Save(PourCrucible, 100f);
         }
 
+        // Crucible tilted TOWARD the player: we look down into the open bowl, molten inside,
+        // and a spout at front-centre pours a column straight down. Used only while pouring, so
+        // it swaps in for the upright pot instead of rotating the pot sideways. Aspect ~430:350
+        // to match the crucible RectTransform.
+        private static void MakePourCrucibleForward()
+        {
+            var c = new PixelCanvas(300, 244);
+            int w = c.w, h = c.h;
+            var bodyLo = new Color(0.14f, 0.12f, 0.11f);
+            var bodyHi = new Color(0.30f, 0.25f, 0.21f);
+            var rimLo = new Color(0.40f, 0.40f, 0.44f);
+            var rimHi = new Color(0.66f, 0.66f, 0.70f);
+            var cavity = new Color(0.14f, 0.09f, 0.07f);
+            var molten = new Color(1f, 0.52f, 0.14f);
+            var moltenHot = new Color(1f, 0.82f, 0.42f);
+            var handle = new Color(0.09f, 0.09f, 0.10f);
+
+            // Side handles (the pivot the pot swings on).
+            c.Rect((int)(w * 0.02f), (int)(h * 0.44f), (int)(w * 0.20f), (int)(h * 0.54f), handle);
+            c.Rect((int)(w * 0.80f), (int)(h * 0.44f), (int)(w * 0.98f), (int)(h * 0.54f), handle);
+            c.Disc((int)(w * 0.20f), (int)(h * 0.49f), (int)(w * 0.05f), new Color(0.20f, 0.20f, 0.22f));
+            c.Disc((int)(w * 0.80f), (int)(h * 0.49f), (int)(w * 0.05f), new Color(0.20f, 0.20f, 0.22f));
+
+            // Bowl body (rounded bucket).
+            int bx0 = (int)(w * 0.18f), bx1 = (int)(w * 0.82f), by0 = (int)(h * 0.10f), by1 = (int)(h * 0.72f);
+            c.VGrad(bx0, by0, bx1, by1, bodyLo, bodyHi);
+            c.Disc(w / 2, (int)(h * 0.16f), (int)(w * 0.31f), bodyLo);   // rounded base
+            c.Disc(bx0, (int)(h * 0.42f), (int)(w * 0.09f), bodyHi);     // left cheek
+            c.Disc(bx1, (int)(h * 0.42f), (int)(w * 0.09f), bodyHi);     // right cheek
+            c.Grain(bx0, by0, bx1, by1, true, 0.07f, 7);
+
+            // Open elliptical mouth (seen from front-above).
+            int rcx = w / 2, rcy = (int)(h * 0.72f);
+            int ra = (int)(w * 0.32f), rb = (int)(h * 0.13f);
+            EllipseFill(c, rcx, rcy, ra, rb, rimLo);
+            EllipseFill(c, rcx, rcy + 2, ra - 4, rb - 2, rimHi);
+            EllipseFill(c, rcx, rcy, ra - 12, rb - 5, cavity);
+            EllipseFill(c, rcx, rcy - 1, ra - 18, rb - 7, molten);
+            EllipseFill(c, rcx, rcy - 1, ra - 30, rb - 10, moltenHot);
+
+            // Front spout: a V-notch at the mouth's near lip and a molten column down the centre.
+            int sHalf = (int)(w * 0.055f);
+            c.Rect(rcx - sHalf - 3, 0, rcx + sHalf + 3, rcy - rb + 4, rimLo);        // lip channel walls
+            c.Rect(rcx - sHalf, 0, rcx + sHalf, rcy - rb + 8, molten);               // molten column
+            c.Rect(rcx - sHalf + 3, 0, rcx + sHalf - 3, rcy - rb + 6, moltenHot);    // hot core
+            c.Radial(rcx, rcy - rb + 6, w * 0.10f, new Color(1f, 0.8f, 0.4f, 0.85f), 1.7f); // spout glow
+
+            c.Save(PourCrucibleFwd, 100f);
+        }
+
+        // Solid axis-aligned ellipse (no native primitive in PixelCanvas).
+        private static void EllipseFill(PixelCanvas c, int cx, int cy, int a, int b, Color col)
+        {
+            if (a <= 0 || b <= 0) return;
+            for (int dy = -b; dy <= b; dy++)
+            {
+                float t = 1f - (float)(dy * dy) / (b * b);
+                if (t < 0f) continue;
+                int half = (int)(a * Mathf.Sqrt(t));
+                c.Row(cx - half, cx + half, cy + dy, col);
+            }
+        }
+
         private static void MakeTang()
         {
             // A short, stylised metal rod: cylindrical shading (dark edges → bright centre),
@@ -534,6 +603,41 @@ namespace ForgeGame.EditorTools
             c.VGrad(x0, (int)(h * 0.03f), x1, (int)(h * 0.22f), new Color(0f, 0f, 0f, 0.30f), new Color(0f, 0f, 0f, 0f)); // shadow at base
             c.Rect((int)(w * 0.46f), (int)(h * 0.06f), (int)(w * 0.53f), (int)(h * 0.95f), new Color(1f, 0.92f, 0.68f, 0.32f)); // specular
             c.Save(Tang, 100f);
+        }
+
+        private static void MakeMeltGauge()
+        {
+            // Semicircular gauge: LOW (left, cold) → amber → good/green (right) → overheat (far right red).
+            var c = new PixelCanvas(440, 250);
+            int cx = c.w / 2, cy = 30, rO = 200, rI = 138;
+            for (int y = cy; y < c.h; y++)
+                for (int x = 0; x < c.w; x++)
+                {
+                    int dx = x - cx, dy = y - cy;
+                    int d2 = dx * dx + dy * dy;
+                    if (d2 < rI * rI || d2 > rO * rO) continue;
+                    float ang = Mathf.Atan2(dy, dx);          // 0 = right, π = left
+                    float heat = 1f - Mathf.Clamp01(ang / Mathf.PI); // 0 left/cold, 1 right/hot
+                    Color col = heat < 0.18f ? new Color(0.30f, 0.34f, 0.40f)          // LOW (cold)
+                              : heat < 0.70f ? new Color(0.80f, 0.52f, 0.22f)          // melting
+                              : heat < 0.90f ? new Color(0.45f, 0.72f, 0.35f)          // ready (good)
+                                             : new Color(0.80f, 0.30f, 0.22f);         // overheat
+                    c.Blend(x, y, col);
+                }
+            // Inner + outer rim.
+            c.Ring(cx, cy, rO, rO - 4, new Color(0.08f, 0.07f, 0.06f, 0.9f));
+            c.Ring(cx, cy, rI + 3, rI, new Color(0.08f, 0.07f, 0.06f, 0.9f));
+            for (int y = 0; y < cy; y++) c.Row(0, c.w, y, new Color(0, 0, 0, 0)); // clear above axis
+            c.Save(MeltGauge, 100f);
+        }
+
+        private static void MakeGaugeNeedle()
+        {
+            var c = new PixelCanvas(40, 210);
+            int w = c.w;
+            c.Tri(w / 2, (int)(c.h * 0.98f), (int)(w * 0.30f), (int)(c.h * 0.9f), new Color(0.95f, 0.9f, 0.85f)); // pointer up
+            c.Disc(w / 2, (int)(c.h * 0.08f), (int)(w * 0.34f), new Color(0.9f, 0.85f, 0.8f));                     // hub
+            c.Save(GaugeNeedle, 100f);
         }
 
         private static void MakeWorkbenchPanel()

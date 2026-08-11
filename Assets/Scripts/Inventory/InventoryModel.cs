@@ -29,6 +29,7 @@ namespace ForgeGame.Inventory
     {
         public List<InventoryItemInstance> stacks = new List<InventoryItemInstance>();
         public List<IngotInstance> ingots = new List<IngotInstance>();
+        public List<CastBlankInstance> castBlanks = new List<CastBlankInstance>();
         public List<WeaponInstance> weapons = new List<WeaponInstance>();
         public int money;
     }

@@ -22,6 +22,7 @@ namespace ForgeGame.Inventory
         public int Money => _model.money;
         public IReadOnlyList<InventoryItemInstance> Stacks => _model.stacks;
         public IReadOnlyList<IngotInstance> Ingots => _model.ingots;
+        public IReadOnlyList<CastBlankInstance> CastBlanks => _model.castBlanks;
         public IReadOnlyList<WeaponInstance> Weapons => _model.weapons;
 
         public void SetDatabase(SmithyDatabase db) => database = db;
@@ -109,6 +110,24 @@ namespace ForgeGame.Inventory
 
         public IngotInstance GetIngot(string uniqueId) => _model.ingots.Find(i => i.uniqueId == uniqueId);
 
+        // ---- Cast blanks ----
+
+        public void AddCastBlank(CastBlankInstance blank)
+        {
+            if (blank == null) return;
+            _model.castBlanks.Add(blank);
+            InventoryChanged?.Invoke();
+        }
+
+        public CastBlankInstance TakeNewestCastBlank()
+        {
+            if (_model.castBlanks.Count == 0) return null;
+            var b = _model.castBlanks[_model.castBlanks.Count - 1];
+            _model.castBlanks.RemoveAt(_model.castBlanks.Count - 1);
+            InventoryChanged?.Invoke();
+            return b;
+        }
+
         // ---- Weapons ----
 
         public void AddWeapon(WeaponInstance weapon)
@@ -142,6 +161,7 @@ namespace ForgeGame.Inventory
             _model = model ?? new InventoryModel();
             _model.stacks ??= new List<InventoryItemInstance>();
             _model.ingots ??= new List<IngotInstance>();
+            _model.castBlanks ??= new List<CastBlankInstance>();
             _model.weapons ??= new List<WeaponInstance>();
             InventoryChanged?.Invoke();
         }
