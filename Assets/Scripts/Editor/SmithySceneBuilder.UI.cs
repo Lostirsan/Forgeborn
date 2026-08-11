@@ -380,9 +380,34 @@ namespace ForgeGame.EditorTools
             fillImg.sprite = _uiMoldFill != null ? _uiMoldFill : _white; fillImg.color = new Color(1f, 0.6f, 0.2f, 1f); fillImg.raycastTarget = false;
             var castBlade = AddUiSprite(mouldO, "CastBlade", new Vector2(40, 0), new Vector2(560, 190), _uiCastBlade, Color.white);
 
+            // ---- Fire under the crucible (behind it) — burns while melting ----
+            var fire = AddUiSprite(foundryG, "Fire", new Vector2(0, 55), new Vector2(300, 330), _uiFire, Color.white);
+            fire.raycastTarget = false;
+            fire.rectTransform.SetAsFirstSibling(); // render behind the pot
+
+            // ---- Temperature board next to the crucible (left) ----
+            var board = NewChild(foundryG, "TempBoard", new Vector2(-360, 250), new Vector2(300, 200));
+            var plate = board.gameObject.AddComponent<Image>();
+            plate.sprite = _white; plate.color = new Color(0.12f, 0.10f, 0.09f, 0.92f);
+            AddLabel(board, "Температура", 0, 70, 280, 34, 24, TextDim, TextAlignmentOptions.Center);
+            var temp = AddLabel(board, "", 0, 16, 280, 62, 46, Accent, TextAlignmentOptions.Center);
+            var tempBarBg = AddUiSprite(board, "TempBarBg", new Vector2(0, -62), new Vector2(250, 26), _white, new Color(0f, 0f, 0f, 0.5f));
+            tempBarBg.raycastTarget = false;
+            var tempBar = AddUiSprite(tempBarBg.rectTransform, "Fill", Vector2.zero, new Vector2(250, 26), _white, new Color(1f, 0.5f, 0.15f, 1f));
+            tempBar.type = Image.Type.Filled; tempBar.fillMethod = Image.FillMethod.Horizontal; tempBar.fillOrigin = 0; tempBar.fillAmount = 0.3f; tempBar.raycastTarget = false;
+
+            // ---- Firewood pile: DRAG the top log into the fire to raise the heat ----
+            var logPile = NewChild(foundryG, "LogPile", new Vector2(-360, -150), new Vector2(260, 210));
+            var l1 = AddUiSprite(logPile, "Log1", new Vector2(-12, -36), new Vector2(210, 68), _uiLog, Color.white); l1.raycastTarget = false; l1.rectTransform.localRotation = Quaternion.Euler(0, 0, 6f);
+            var l2 = AddUiSprite(logPile, "Log2", new Vector2(16, 12), new Vector2(210, 68), _uiLog, new Color(0.9f, 0.9f, 0.9f)); l2.raycastTarget = false; l2.rectTransform.localRotation = Quaternion.Euler(0, 0, -8f);
+            var dragLog = AddUiSprite(logPile, "DragLog", new Vector2(-6, 58), new Vector2(196, 64), _uiLog, Color.white);
+            dragLog.raycastTarget = true; dragLog.rectTransform.localRotation = Quaternion.Euler(0, 0, 3f);
+            var logDrag = dragLog.gameObject.AddComponent<FoundryLogDrag>();
+            WireComponent(logDrag, so => { SetRef(so, "fireTarget", fire.rectTransform); SetRef(so, "foundry", p); });
+            AddLabel(logPile, "Тащите бревно в огонь", 0, -116, 340, 34, 22, Accent, TextAlignmentOptions.Center);
+
             // Labels + action buttons (right side / bottom).
             var state = AddLabel(foundryG, "", 470, 250, 560, 60, 40, TextLight, TextAlignmentOptions.Center);
-            var temp = AddLabel(foundryG, "", 470, 180, 560, 50, 30, Accent, TextAlignmentOptions.Center);
             var pourStatus = AddLabel(foundryG, "", 470, 100, 620, 50, 28, Accent, TextAlignmentOptions.Center);
             var pourFinish = AddButton(foundryG, "Закрыть форму", 470, -120, 380, 74);
             var extract = AddButton(foundryG, "Забрать заготовку", 470, -120, 380, 74);
@@ -398,6 +423,11 @@ namespace ForgeGame.EditorTools
                 SetRef(so, "foundryGroup", foundryG.gameObject);
                 SetRef(so, "mouldObject", mouldO.gameObject);
                 SetRef(so, "tempLabel", temp);
+                SetRef(so, "tempBar", tempBar);
+                SetRef(so, "tempBoardObject", board.gameObject);
+                SetRef(so, "fireObject", fire.gameObject);
+                SetRef(so, "fireImage", fire);
+                SetRef(so, "logPileObject", logPile.gameObject);
                 SetRef(so, "stateLabel", state);
                 SetRef(so, "statusLabel", status);
                 SetRef(so, "crucibleMoltenImage", crucibleMolten);

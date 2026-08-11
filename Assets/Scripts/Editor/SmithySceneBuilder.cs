@@ -62,7 +62,7 @@ namespace ForgeGame.EditorTools
         // Foundry world + UI art.
         private static Sprite _fFurnace, _fAnvil, _fAssembly, _fStorage, _fDoor, _fBg, _fFg;
         private static Sprite _uiCrucible, _uiCrucibleMolten, _uiMoldClosed, _uiMoldMask, _uiMoldFill, _uiStream, _uiCastBlade, _uiHammer, _uiSparks;
-        private static Sprite _uiPourCrucible, _uiPourCrucibleFwd, _uiBladeGrid, _uiWorkbench, _uiBladeFinal, _uiTang, _uiMeltGauge, _uiGaugeNeedle;
+        private static Sprite _uiPourCrucible, _uiPourCrucibleFwd, _uiFire, _uiLog, _uiBladeGrid, _uiWorkbench, _uiBladeFinal, _uiTang, _uiMeltGauge, _uiGaugeNeedle;
         private static Sprite[] _uiGuards, _uiHandles, _uiPommels;
         private static Texture _uiCastTexture;
         private static DefaultControls.Resources _uiRes;
@@ -207,6 +207,8 @@ namespace ForgeGame.EditorTools
 
             _uiPourCrucible = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.PourCrucible);
             _uiPourCrucibleFwd = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.PourCrucibleFwd);
+            _uiFire = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.Fire);
+            _uiLog = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.Log);
             _uiBladeGrid = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.BladeGrid);
             _uiWorkbench = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.WorkbenchPanel);
             _uiBladeFinal = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.BladeFinal);

@@ -6,15 +6,37 @@ using UnityEngine.UI;
 
 namespace ForgeGame.UI.Smithy
 {
-    /// <summary>Read-only inventory viewer grouped by category.</summary>
+    /// <summary>
+    /// Read-only inventory viewer. Items are shown as cards in two columns: a square
+    /// "slot" holding the icon on the left, the name and details on the right.
+    /// </summary>
     public class InventoryPanelController : SmithyPanel
     {
         [SerializeField] private Transform listContent;
         [SerializeField] private TMP_FontAsset font;
         [SerializeField] private Button backButton;
 
+        private const float CardWidth = 468f;
+        private const float CardHeight = 78f;
+        private const int Columns = 2;
+
         private static readonly Color Header = new Color(0.95f, 0.6f, 0.28f);
-        private static readonly Color Body = new Color(0.86f, 0.81f, 0.69f);
+        private static readonly Color Body = new Color(0.90f, 0.85f, 0.74f);
+        private static readonly Color Dim = new Color(0.62f, 0.58f, 0.5f);
+        private static readonly Color CardBg = new Color(0.16f, 0.14f, 0.12f, 0.92f);
+        private static readonly Color SlotBorder = new Color(0.34f, 0.30f, 0.25f);
+        private static readonly Color SlotBg = new Color(0.07f, 0.06f, 0.05f);
+
+        private static readonly Color OreTint = new Color(0.72f, 0.78f, 0.86f);
+        private static readonly Color FuelTint = new Color(0.95f, 0.62f, 0.32f);
+        private static readonly Color FluxTint = new Color(0.6f, 0.85f, 0.8f);
+        private static readonly Color CompTint = new Color(0.8f, 0.7f, 0.95f);
+        private static readonly Color IngotTint = new Color(0.9f, 0.7f, 0.42f);
+        private static readonly Color BlankTint = new Color(0.85f, 0.55f, 0.3f);
+        private static readonly Color WeaponTint = new Color(0.85f, 0.88f, 0.95f);
+
+        private Transform _row;
+        private int _col;
 
         private void Awake()
         {
@@ -31,38 +53,159 @@ namespace ForgeGame.UI.Smithy
             RuntimeUI.ClearChildren(listContent);
 
             AddHeader("Руда и материалы");
-            AddStacks(ItemType.Ore);
-            AddStacks(ItemType.Fuel);
-            AddStacks(ItemType.Flux);
-            AddStacks(ItemType.Component);
+            bool any = false;
+            any |= AddStacks(ItemType.Ore, OreTint);
+            any |= AddStacks(ItemType.Fuel, FuelTint);
+            any |= AddStacks(ItemType.Flux, FluxTint);
+            any |= AddStacks(ItemType.Component, CompTint);
+            if (!any) AddEmpty();
 
             AddHeader("Слитки");
-            if (inv.Ingots.Count == 0) AddBody("— нет —");
+            if (inv.Ingots.Count == 0) AddEmpty();
             foreach (var ig in inv.Ingots)
             {
                 var mat = db.GetMaterial(ig.materialId);
-                string flags = ig.isScrap ? " [лом]" : ig.porous ? " [пористый]" : ig.overheated ? " [перегрет]" : "";
-                AddBody($"{(mat != null ? mat.DisplayName : ig.materialId)}: масса {ig.mass:0.0}, чистота {ig.purity * 100f:0}%, качество {ig.smeltingQuality * 100f:0}%{flags}");
+                string flags = ig.isScrap ? "  [лом]" : ig.porous ? "  [пористый]" : ig.overheated ? "  [перегрет]" : "";
+                AddCard(mat != null ? mat.Icon : null, IngotTint,
+                    mat != null ? mat.DisplayName : ig.materialId,
+                    $"масса {ig.mass:0.0} · чистота {ig.purity * 100f:0}% · качество {ig.smeltingQuality * 100f:0}%{flags}", Body);
+            }
+
+            AddHeader("Заготовки");
+            if (inv.CastBlanks.Count == 0) AddEmpty();
+            foreach (var cb in inv.CastBlanks)
+            {
+                var mat = db.GetMaterial(cb.materialId);
+                var bpc = db.GetBlueprint(cb.blueprintId);
+                string det = $"плавка {cb.meltQuality * 100f:0}% · заливка {cb.pourQuality * 100f:0}%";
+                if (cb.defects != null && cb.defects.Count > 0) det += $" · дефектов: {cb.defects.Count}";
+                AddCard(bpc != null ? bpc.Preview : null, BlankTint,
+                    mat != null ? $"Заготовка клинка ({mat.DisplayName})" : "Литая заготовка", det, Body);
             }
 
             AddHeader("Оружие");
-            if (inv.Weapons.Count == 0) AddBody("— нет —");
-            foreach (var w in inv.Weapons)
-                AddBody($"{w.customName}  (урон {w.damage:0.0}, проч. {w.durability:0}, цена {w.value})");
-        }
-
-        private void AddStacks(ItemType type)
-        {
-            var inv = Controller.Inventory;
-            var db = Controller.Database;
-            foreach (var s in inv.GetStacksByType(type))
+            if (inv.Weapons.Count == 0) AddEmpty();
+            foreach (var wp in inv.Weapons)
             {
-                var data = db.GetItem(s.itemId);
-                AddBody($"{(data != null ? data.DisplayName : s.itemId)} × {s.count}");
+                var bp = db.GetBlueprint(wp.blueprintId);
+                AddCard(bp != null ? bp.Preview : null, WeaponTint, wp.customName,
+                    $"урон {wp.damage:0.0} · проч. {wp.durability:0} · {wp.value} зол.", new Color(0.98f, 0.9f, 0.7f));
             }
         }
 
-        private void AddHeader(string t) => RuntimeUI.MakeText(listContent, font, t, 26, Header);
-        private void AddBody(string t) => RuntimeUI.MakeText(listContent, font, t, 22, Body);
+        private bool AddStacks(ItemType type, Color tint)
+        {
+            var inv = Controller.Inventory;
+            var db = Controller.Database;
+            bool any = false;
+            foreach (var s in inv.GetStacksByType(type))
+            {
+                var data = db.GetItem(s.itemId);
+                AddCard(data != null ? data.Icon : null, tint,
+                    data != null ? data.DisplayName : s.itemId, $"× {s.count}", Body);
+                any = true;
+            }
+            return any;
+        }
+
+        // ---- Layout building ----
+
+        private void AddHeader(string text)
+        {
+            _row = null; _col = 0;                     // headers break the column flow
+            var t = RuntimeUI.MakeText(listContent, font, text, 26, Header);
+            t.fontStyle = FontStyles.Bold;
+            var le = t.GetComponent<LayoutElement>();
+            if (le != null) { le.minHeight = 44f; le.preferredHeight = 44f; }
+        }
+
+        private void AddEmpty()
+        {
+            _row = null; _col = 0;
+            RuntimeUI.MakeText(listContent, font, "— пусто —", 20, Dim);
+        }
+
+        private Transform NextCell()
+        {
+            if (_row == null || _col >= Columns) { _row = NewRow(); _col = 0; }
+            _col++;
+            return _row;
+        }
+
+        private Transform NewRow()
+        {
+            var go = new GameObject("Row", typeof(RectTransform));
+            go.transform.SetParent(listContent, false);
+            var hl = go.AddComponent<HorizontalLayoutGroup>();
+            hl.spacing = 16; hl.childControlWidth = true; hl.childControlHeight = true;
+            hl.childForceExpandWidth = false; hl.childForceExpandHeight = false;
+            hl.childAlignment = TextAnchor.UpperLeft;
+            var le = go.AddComponent<LayoutElement>();
+            le.minHeight = CardHeight; le.preferredHeight = CardHeight;
+            return go.transform;
+        }
+
+        private void AddCard(Sprite icon, Color accent, string name, string detail, Color nameColor)
+        {
+            var parent = NextCell();
+
+            var card = new GameObject("Card", typeof(RectTransform));
+            card.transform.SetParent(parent, false);
+            var cardImg = card.AddComponent<Image>(); cardImg.color = CardBg; cardImg.raycastTarget = false;
+            var chl = card.AddComponent<HorizontalLayoutGroup>();
+            chl.spacing = 12; chl.padding = new RectOffset(10, 12, 8, 8);
+            chl.childControlWidth = true; chl.childControlHeight = true;
+            chl.childForceExpandWidth = false; chl.childForceExpandHeight = false;
+            chl.childAlignment = TextAnchor.MiddleLeft;
+            var cle = card.AddComponent<LayoutElement>();
+            cle.preferredWidth = CardWidth; cle.minWidth = CardWidth;
+            cle.minHeight = CardHeight; cle.preferredHeight = CardHeight; cle.flexibleWidth = 0;
+
+            // Square slot (border + dark inner) with the icon (or a letter fallback).
+            float slotSize = CardHeight - 16f;
+            var slot = new GameObject("Slot", typeof(RectTransform));
+            slot.transform.SetParent(card.transform, false);
+            var slotImg = slot.AddComponent<Image>(); slotImg.color = SlotBorder; slotImg.raycastTarget = false;
+            var sle = slot.AddComponent<LayoutElement>();
+            sle.minWidth = slotSize; sle.preferredWidth = slotSize; sle.minHeight = slotSize; sle.preferredHeight = slotSize;
+
+            var inner = new GameObject("Inner", typeof(RectTransform));
+            inner.transform.SetParent(slot.transform, false);
+            var innerRt = (RectTransform)inner.transform;
+            innerRt.anchorMin = Vector2.zero; innerRt.anchorMax = Vector2.one;
+            innerRt.offsetMin = new Vector2(3, 3); innerRt.offsetMax = new Vector2(-3, -3);
+            var innerImg = inner.AddComponent<Image>(); innerImg.color = SlotBg; innerImg.raycastTarget = false;
+
+            if (icon != null)
+            {
+                var ico = new GameObject("Icon", typeof(RectTransform));
+                ico.transform.SetParent(inner.transform, false);
+                var icoRt = (RectTransform)ico.transform;
+                icoRt.anchorMin = Vector2.zero; icoRt.anchorMax = Vector2.one;
+                icoRt.offsetMin = new Vector2(5, 5); icoRt.offsetMax = new Vector2(-5, -5);
+                var icoImg = ico.AddComponent<Image>();
+                icoImg.sprite = icon; icoImg.preserveAspect = true; icoImg.raycastTarget = false;
+            }
+            else
+            {
+                string glyph = string.IsNullOrEmpty(name) ? "?" : name.Substring(0, 1).ToUpper();
+                var letter = RuntimeUI.MakeText(inner.transform, font, glyph, 30, accent, TextAlignmentOptions.Center);
+                letter.fontStyle = FontStyles.Bold;
+                var lrt = (RectTransform)letter.transform;
+                lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+                lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+            }
+
+            // Name + detail on the right.
+            var txt = new GameObject("TextBlock", typeof(RectTransform));
+            txt.transform.SetParent(card.transform, false);
+            var tvl = txt.AddComponent<VerticalLayoutGroup>();
+            tvl.childControlWidth = true; tvl.childControlHeight = true;
+            tvl.childForceExpandWidth = true; tvl.childForceExpandHeight = false;
+            tvl.spacing = 1; tvl.childAlignment = TextAnchor.MiddleLeft;
+            var tle = txt.AddComponent<LayoutElement>(); tle.flexibleWidth = 1;
+            RuntimeUI.MakeText(txt.transform, font, name, 21, nameColor);
+            if (!string.IsNullOrEmpty(detail)) RuntimeUI.MakeText(txt.transform, font, detail, 16, Dim);
+        }
     }
 }

@@ -18,13 +18,22 @@ namespace ForgeGame.UI.Smithy
     public class FoundryPanelController : SmithyPanel
     {
         private const int BronzeCost = 3;
-        private const float HeatRate = 130f;   // deg/s auto-heat (gentle so it completes in the good band)
-        private const float MaxTemp = 1400f;
-        private const float MeltRate = 0.4f;   // gauge fills over a few seconds once in range
         private const float MaxFillRate = 0.72f;
         private const float SafePourRate = 0.28f;
         private const float CoolTime = 2.5f;
         private const float FillTarget = 1f;
+
+        [Header("Melting (readiness bar — driven by the fire's heat)")]
+        [SerializeField] private float meltDuration = 22f;     // seconds to fill the bar at normal heat (factor 1)
+        [SerializeField] private float readyFraction = 0.65f;  // below this = under-melted → weak forging
+        [SerializeField] private float ruinFraction = 1.6f;    // this much overcook = fully ruined metal
+
+        [Header("Fire / temperature (feed logs to keep it hot)")]
+        [SerializeField] private float startTemp = 1000f;
+        [SerializeField] private float maxTemp = 1500f;
+        [SerializeField] private float minMeltTemp = 850f;     // below this the ore won't melt (bar frozen)
+        [SerializeField] private float hotTemp = 1350f;        // melt speed maxes out at this heat
+        [SerializeField] private float logHeat = 240f;         // heat added per log dragged in
 
         [Header("Crucible pour tuning (degrees)")]
         [SerializeField] private float pourStartAngle = 22f;   // stream begins past this tilt
@@ -39,6 +48,11 @@ namespace ForgeGame.UI.Smithy
 
         [Header("Melting / gauge")]
         [SerializeField] private TMP_Text tempLabel;
+        [SerializeField] private Image tempBar;              // horizontal fill of current heat
+        [SerializeField] private GameObject tempBoardObject; // temperature board (melting only)
+        [SerializeField] private GameObject fireObject;      // flames under the crucible (melting only)
+        [SerializeField] private Image fireImage;            // pulsed by heat
+        [SerializeField] private GameObject logPileObject;   // firewood pile (melting only)
         [SerializeField] private TMP_Text stateLabel;
         [SerializeField] private TMP_Text statusLabel;
         [SerializeField] private Image crucibleMoltenImage;
@@ -117,10 +131,11 @@ namespace ForgeGame.UI.Smithy
             var s = Controller.Session.StartNewSession();
             s.selectedMaterialId = SmithyIds.Bronze;
             s.blueprintId = SmithyIds.BronzeSword;
-            var bm = Bronze;
-            s.meltTemperature = bm != null ? bm.MeltingMin - 30f : 20f; // already near melting; furnace warms fast
+            // Fire starts lit but coolish; the player feeds logs to keep the ore melting.
+            s.meltTemperature = startTemp;
             s.meltQuality = 0f;
             s.meltProgress = 0f;
+            s.meltTimer = 0f;
             s.overheatExposure = 0f;
             s.fillAmount = 0f;
             s.pourQualityWeightedSum = 0f;
@@ -135,94 +150,124 @@ namespace ForgeGame.UI.Smithy
 
         // ---- Melting ----
 
+        // Readiness p: 0 at start, 1.0 when the bar is full (ideal pour), >1 = overcook.
+        // Now stored directly in meltProgress (its rate is set by the fire's heat).
+        private float MeltP => Session != null ? Session.meltProgress : 0f;
+
+        // How fast the ore melts at the current heat: frozen below minMeltTemp, then rising —
+        // the hotter the fire, the faster it goes (up to hotTemp).
+        private float HeatFactor(float temp)
+        {
+            if (temp < minMeltTemp) return 0f;
+            return Mathf.Lerp(0.35f, 1.8f, Mathf.Clamp01(Mathf.InverseLerp(minMeltTemp, hotTemp, temp)));
+        }
+
+        // Quality by WHEN you pour: too early (< readyFraction) = under-melted and weak; a good
+        // window rising to a peak at a full bar; then it degrades the longer it overcooks.
+        private float MeltQualityAt(float p)
+        {
+            if (p < readyFraction) return Mathf.Lerp(0.08f, 0.45f, Mathf.Clamp01(p / readyFraction));
+            if (p <= 1f) return Mathf.Lerp(0.7f, 1f, Mathf.InverseLerp(readyFraction, 1f, p));
+            return Mathf.Lerp(1f, 0.2f, Mathf.Clamp01(Mathf.InverseLerp(1f, ruinFraction, p)));
+        }
+
         private void TickMelting()
         {
-            // Auto-melt: the furnace heats the ore by itself once selected. The player just
-            // watches the gauge and proceeds to pour while the metal is in the good band.
-            Session.meltTemperature = Mathf.Clamp(Session.meltTemperature + HeatRate * Time.deltaTime, 20f, MaxTemp);
+            // Temperature holds where the player set it (no passive cooling); dragging logs in
+            // raises it. The readiness bar advances only while hot enough, faster the hotter it is.
+            float factor = HeatFactor(Session.meltTemperature);
+            if (factor > 0f && meltDuration > 0.01f)
+                Session.meltProgress = Mathf.Min(ruinFraction, Session.meltProgress + factor / meltDuration * Time.deltaTime);
+            Session.meltQuality = MeltQualityAt(Session.meltProgress);
 
-            var b = Bronze;
-            if (b != null)
-            {
-                float q = RangeEvaluator.EvaluateQuality(Session.meltTemperature,
-                    b.MeltingMin, b.MeltingIdealMin, b.MeltingIdealMax, b.MeltingMax);
-                if (Session.meltTemperature >= b.MeltingMin)
-                {
-                    float meltEfficiency = Mathf.Lerp(0.5f, 1f,
-                        Mathf.InverseLerp(b.MeltingMin, b.MeltingIdealMin, Session.meltTemperature));
-                    Session.meltProgress = Mathf.Clamp01(Session.meltProgress + MeltRate * meltEfficiency * Time.deltaTime);
-                }
+            // Pour at ANY time — the crucible is always grabbable while melting; tilting past the
+            // pour threshold locks in the quality and starts pouring.
+            if (crucibleTilt != null) crucibleTilt.enabled = true;
+            if (crucibleTilt != null && crucibleTilt.CurrentAngle > pourStartAngle) { BeginPouring(); return; }
+            RefreshMelting();
+        }
 
-                if (Session.meltTemperature > b.MeltingIdealMax)
-                {
-                    float overheat = Mathf.InverseLerp(b.MeltingIdealMax, MaxTemp, Session.meltTemperature);
-                    Session.overheatExposure = Mathf.Clamp01(Session.overheatExposure + overheat * 0.22f * Time.deltaTime);
-                }
-
-                Session.meltQuality = Mathf.Clamp01(q * (1f - Session.overheatExposure * 0.8f));
-            }
-
-            // Once molten, the player can grab and TILT the same crucible; tilting past the
-            // pour threshold starts the pour automatically (no separate button/phase).
-            bool molten = b != null && Session.meltProgress >= 1f && Session.meltTemperature >= b.MeltingMin;
-            if (crucibleTilt != null) crucibleTilt.enabled = molten;
-            if (molten && crucibleTilt != null && crucibleTilt.CurrentAngle > pourStartAngle) { BeginPouring(); return; }
+        // Throw a log on the fire: a burst of heat (feeds the melt). Fire flares briefly.
+        // Public so the drag-and-drop log (FoundryLogDrag) can call it on a valid drop.
+        public void ThrowLog()
+        {
+            if (Session == null || Session.currentStage != ForgeStage.Melting) return;
+            Session.meltTemperature = Mathf.Min(maxTemp, Session.meltTemperature + logHeat);
+            Controller.Audio?.PlayBellows();
+            if (fireImage != null) fireImage.rectTransform.localScale = new Vector3(1.25f, 1.3f, 1f); // pops back down in UpdateFire
             RefreshMelting();
         }
 
         private float GaugeHeat01()
         {
-            // The arc FILLS as the ore melts; a small extra push into the red once overheated.
+            // Needle sweep mapped so the gauge's green band lines up with the good pour window
+            // and the red with overcook. (Art zones: <0.70 amber, <0.90 green, else red.)
             if (Session == null) return 0f;
-            var b = Bronze;
-            float over = (b != null && Session.meltTemperature > b.MeltingMax) ? 0.12f : 0f;
-            return Mathf.Clamp01(Session.meltProgress * 0.88f + over);
+            float p = MeltP;
+            if (p < readyFraction) return Mathf.Lerp(0f, 0.66f, Mathf.Clamp01(p / readyFraction));
+            if (p <= 1f) return Mathf.Lerp(0.66f, 0.88f, Mathf.InverseLerp(readyFraction, 1f, p));
+            return Mathf.Lerp(0.88f, 1f, Mathf.Clamp01(Mathf.InverseLerp(1f, ruinFraction, p)));
         }
 
         private void RefreshMelting()
         {
-            var b = Bronze;
-            float t = Session != null ? Session.meltTemperature : 20f;
-            if (tempLabel != null) tempLabel.text = $"Температура: {t:0}°";
+            float p = MeltP;
+            float temp = Session != null ? Session.meltTemperature : 20f;
+            bool tooCold = temp < minMeltTemp;
 
-            string state = "Холодно";
-            bool molten = false;
-            if (b != null)
-            {
-                // Ready to pour once fully melted and hot enough — overheat is a quality
-                // penalty, NOT a lock-out, so the player can still salvage the metal.
-                molten = Session != null && Session.meltProgress >= 1f && t >= b.MeltingMin;
-                if (t > b.MeltingMax) state = molten ? "Перегрев — лейте!" : "Перегрев!";
-                else if (molten) state = "Расплав готов";
-                else if (t >= b.MeltingIdealMin) state = "Руда плавится";
-                else if (t >= b.MeltingMin) state = "Горячо";
-                else if (t >= 400f) state = "Нагрев";
-            }
+            // Temperature board: number + colour-zoned bar (blue cold → green good → red hot).
+            Color hot = new Color(1f, 0.45f, 0.15f), warm = new Color(0.55f, 0.85f, 0.4f), cold = new Color(0.45f, 0.65f, 1f);
+            Color tcol = tooCold ? cold : temp > hotTemp ? hot : warm;
+            if (tempLabel != null) { tempLabel.text = $"{temp:0}°"; tempLabel.color = tcol; }
+            if (tempBar != null) { tempBar.fillAmount = Mathf.Clamp01(Mathf.InverseLerp(20f, maxTemp, temp)); tempBar.color = tcol; }
+
+            string state = tooCold ? "Слишком холодно"
+                : p < readyFraction ? "Руда плавится"
+                : p <= 1f ? "Расплав готов"
+                : "Перегрев — металл портится";
             if (stateLabel != null) stateLabel.text = state;
-            // Needle sweeps left(cold)→right(hot); ~+82° at cold, ~-82° at overheat.
-            if (gaugeNeedle != null) gaugeNeedle.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(82f, -82f, GaugeHeat01()));
-            if (statusLabel != null && Session != null)
-                statusLabel.text = molten
-                    ? "Расплав готов — наклоните котёл, чтобы залить форму."
-                    : $"Плавление: {Session.meltProgress * 100f:0}%…";
 
-            if (crucibleMoltenImage != null && b != null)
+            // Needle sweeps cold→hot; green band = good window, red = overcook.
+            if (gaugeNeedle != null) gaugeNeedle.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(82f, -82f, GaugeHeat01()));
+            if (statusLabel != null)
+                statusLabel.text = tooCold ? "Огонь остыл — подкиньте бревно, иначе руда не плавится."
+                    : p < readyFraction ? "Руда плавится — держите жар. Рано лить = слабая ковка."
+                    : p <= 1f ? "Расплав готов — наклоните котёл, чтобы залить форму."
+                    : "Металл перегревается и портится — лейте скорее!";
+
+            if (crucibleMoltenImage != null)
             {
-                float heat = Mathf.Clamp01(Mathf.InverseLerp(400f, b.MeltingMax, t));
+                float heat = Mathf.Clamp01(p);
                 Color moltenColor = Color.Lerp(new Color(0.3f, 0.14f, 0.08f, 0.35f), new Color(1f, 0.75f, 0.3f, 1f), heat);
-                moltenColor.a = Mathf.Lerp(0.25f, 1f, Session != null ? Session.meltProgress : 0f);
+                moltenColor.a = Mathf.Lerp(0.25f, 1f, heat);
                 crucibleMoltenImage.color = moltenColor;
             }
+            UpdateFire(temp);
+        }
+
+        // Flames grow with heat; a log-throw briefly pops the scale up and this eases it back.
+        private void UpdateFire(float temp)
+        {
+            if (fireImage == null) return;
+            float k = Mathf.Clamp01(Mathf.InverseLerp(300f, maxTemp, temp));
+            var target = new Vector3(Mathf.Lerp(0.8f, 1.05f, k), Mathf.Lerp(0.55f, 1.15f, k), 1f);
+            fireImage.rectTransform.localScale = Vector3.MoveTowards(fireImage.rectTransform.localScale, target, Time.deltaTime * 1.6f);
+            var c = fireImage.color; c.a = Mathf.Lerp(0.5f, 1f, k); fireImage.color = c;
         }
 
         private void BeginPouring()
         {
-            var b = Bronze;
-            if (b == null || Session.meltProgress < 1f || Session.meltTemperature < b.MeltingMin) return;
-            float temperatureQuality = RangeEvaluator.EvaluateQuality(Session.meltTemperature,
-                b.MeltingMin, b.MeltingIdealMin, b.MeltingIdealMax, b.MeltingMax);
-            Session.meltQuality = Mathf.Clamp01(temperatureQuality * (1f - Session.overheatExposure * 0.8f));
-            if (Session.overheatExposure >= 0.45f) Session.AddDefect(DefectIds.OverheatedMetal);
+            // Pour is allowed at ANY time; the quality is locked in at this moment from how far
+            // the melt has progressed. Too early → soft, under-melted metal; too long → burnt.
+            float p = MeltP;
+            Session.meltQuality = MeltQualityAt(p);
+            if (p < readyFraction)
+                Session.AddDefect(DefectIds.SoftMetal);                    // недокал — слабая, гнётся
+            else if (p > 1f)
+            {
+                Session.AddDefect(DefectIds.OverheatedMetal);              // перестоял — выгорел
+                if (p > (1f + ruinFraction) * 0.5f) Session.AddDefect(DefectIds.BrittleStructure);
+            }
             Session.fillAmount = 0f;
             Session.pourQualityWeightedSum = 0f;
             Session.pouredAmountForQuality = 0f;
@@ -241,10 +286,8 @@ namespace ForgeGame.UI.Smithy
             float angle = crucibleTilt != null ? crucibleTilt.CurrentAngle : 0f;
             float flow01 = angle <= pourStartAngle ? 0f
                 : Mathf.Clamp01(Mathf.InverseLerp(pourStartAngle, fullPourAngle, angle));
-            // Bronze gets less fluid as it cools; near solidification it barely flows.
-            float fluidity = Bronze != null
-                ? Mathf.Clamp01(Mathf.InverseLerp(Bronze.MeltingMin - 60f, Bronze.MeltingIdealMin, Session.meltTemperature))
-                : 1f;
+            // The metal is molten when pouring begins; flow is governed by tilt, not temperature.
+            float fluidity = 1f;
             bool empty = Session.remainingMetal <= 0.0001f;
             float pourRate = empty ? 0f : MaxFillRate * flow01 * fluidity;
             Session.lastPourRate = pourRate;
@@ -281,7 +324,6 @@ namespace ForgeGame.UI.Smithy
                     Session.pourQualityWeightedSum += rateQuality * poured;
                     Session.pouredAmountForQuality += poured;
                 }
-                Session.meltTemperature = Mathf.Max(180f, Session.meltTemperature - (24f + pourRate * 32f) * Time.deltaTime);
                 if (Controller.Audio != null && Random.value < 0.05f) Controller.Audio.PlayWater();
             }
             FadeSpill();
@@ -405,8 +447,12 @@ namespace ForgeGame.UI.Smithy
             if (materialsGroup != null) materialsGroup.SetActive(selecting);
             if (foundryGroup != null) foundryGroup.SetActive(crafting);
             if (mouldObject != null) mouldObject.SetActive(mould);
-            // The temperature dial only matters while heating; hide it once we start pouring.
-            if (gaugeObject != null) gaugeObject.SetActive(stage == ForgeStage.Melting);
+            // Heating-only props (gauge, temperature board, fire, firewood) show while melting.
+            bool melting = stage == ForgeStage.Melting;
+            if (gaugeObject != null) gaugeObject.SetActive(melting);
+            if (tempBoardObject != null) tempBoardObject.SetActive(melting);
+            if (fireObject != null) fireObject.SetActive(melting);
+            if (logPileObject != null) logPileObject.SetActive(melting);
 
             bool canStart = !Controller.Session.HasActiveSession &&
                             Controller.Inventory.GetCount(SmithyIds.Bronze) >= BronzeCost;

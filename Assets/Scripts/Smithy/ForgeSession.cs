@@ -37,6 +37,7 @@ namespace ForgeGame.Smithy
         public float meltTemperature = 20f;
         public float meltQuality;
         public float meltProgress;
+        public float meltTimer;        // seconds since melt started (timed-readiness model)
         public float overheatExposure;
 
         // Foundry — pouring.

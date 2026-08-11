@@ -49,6 +49,8 @@ namespace ForgeGame.EditorTools
         public const string BladeGrid = Dir + "/Foundry_BladeGrid.png";
         public const string PourCrucible = Dir + "/Foundry_PourCrucible.png";
         public const string PourCrucibleFwd = Dir + "/Foundry_PourCrucibleFwd.png"; // tilted TOWARD player: open bowl pouring down centre
+        public const string Fire = Dir + "/Foundry_Fire.png";  // flames under the crucible while melting
+        public const string Log = Dir + "/Foundry_Log.png";    // firewood the player throws into the fire
         public const string WorkbenchPanel = Dir + "/Foundry_WorkbenchPanel.png";
         public const string Tang = Dir + "/Foundry_Tang.png"; // metal rod the hilt is threaded onto
         public const string MeltGauge = Dir + "/Foundry_MeltGauge.png";   // semicircular melt gauge (LOW→good→overheat)
@@ -107,6 +109,8 @@ namespace ForgeGame.EditorTools
             Make(force, BladeGrid, MakeBladeGrid);
             Make(force, PourCrucible, MakePourCrucible);
             Make(force, PourCrucibleFwd, MakePourCrucibleForward);
+            Make(force, Fire, MakeFire);
+            Make(force, Log, MakeLog);
             Make(force, WorkbenchPanel, MakeWorkbenchPanel);
             Make(force, Tang, MakeTang);
             Make(force, MeltGauge, MakeMeltGauge);
@@ -573,6 +577,43 @@ namespace ForgeGame.EditorTools
             c.Radial(rcx, rcy - rb + 6, w * 0.10f, new Color(1f, 0.8f, 0.4f, 0.85f), 1.7f); // spout glow
 
             c.Save(PourCrucibleFwd, 100f);
+        }
+
+        private static void MakeFire()
+        {
+            var c = new PixelCanvas(240, 260);
+            int w = c.w, h = c.h;
+            int baseY = (int)(h * 0.10f);
+            c.Radial(w / 2, (int)(h * 0.22f), w * 0.55f, new Color(1f, 0.45f, 0.12f, 0.42f), 1.8f);      // heat glow
+            Flame(c, w / 2, (int)(h * 0.92f), (int)(w * 0.30f), baseY, new Color(0.95f, 0.34f, 0.07f, 0.95f)); // big orange
+            Flame(c, (int)(w * 0.30f), (int)(h * 0.60f), (int)(w * 0.14f), baseY, new Color(1f, 0.5f, 0.12f, 0.9f));
+            Flame(c, (int)(w * 0.70f), (int)(h * 0.62f), (int)(w * 0.14f), baseY, new Color(1f, 0.5f, 0.12f, 0.9f));
+            Flame(c, w / 2, (int)(h * 0.74f), (int)(w * 0.18f), baseY, new Color(1f, 0.8f, 0.25f, 0.95f)); // yellow
+            Flame(c, w / 2, (int)(h * 0.56f), (int)(w * 0.09f), baseY, new Color(1f, 0.95f, 0.65f, 0.95f)); // white core
+            c.Save(Fire, 100f);
+        }
+
+        // A single flame tongue: triangle (apex up) with a rounded base.
+        private static void Flame(PixelCanvas c, int apexX, int apexY, int halfBase, int baseY, Color col)
+        {
+            int height = apexY - baseY;
+            if (height <= 0) return;
+            c.Tri(apexX, apexY, halfBase, height, col);
+            c.Disc(apexX, baseY + halfBase / 2, halfBase, col);
+        }
+
+        private static void MakeLog()
+        {
+            var c = new PixelCanvas(180, 74);
+            int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.06f), (int)(h * 0.22f), (int)(w * 0.94f), (int)(h * 0.78f),
+                new Color(0.30f, 0.19f, 0.10f), new Color(0.46f, 0.30f, 0.16f));
+            c.Disc((int)(w * 0.10f), h / 2, (int)(h * 0.30f), new Color(0.48f, 0.34f, 0.20f));
+            c.Disc((int)(w * 0.90f), h / 2, (int)(h * 0.30f), new Color(0.52f, 0.38f, 0.24f)); // cut end
+            c.Ring((int)(w * 0.90f), h / 2, (int)(h * 0.24f), (int)(h * 0.19f), new Color(0.36f, 0.24f, 0.14f));
+            c.Ring((int)(w * 0.90f), h / 2, (int)(h * 0.13f), (int)(h * 0.08f), new Color(0.36f, 0.24f, 0.14f));
+            c.Grain((int)(w * 0.12f), (int)(h * 0.26f), (int)(w * 0.84f), (int)(h * 0.74f), false, 0.12f, 5);
+            c.Save(Log, 100f);
         }
 
         // Solid axis-aligned ellipse (no native primitive in PixelCanvas).
