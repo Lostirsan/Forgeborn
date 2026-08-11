@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78870348e0f1c4e4e9279881ac4c059a, type: 3}
+  m_Name: WeaponComponentData_handle_basic
+  m_EditorClassIdentifier: Assembly-CSharp::ForgeGame.Data.WeaponComponentData
+  id: handle_basic
+  displayName: "\u041F\u0440\u043E\u0441\u0442\u0430\u044F \u0440\u0443\u043A\u043E\u044F\u0442\u044C"
+  icon: {fileID: 0}
+  slot: 2
+  weightDelta: 0.12
+  balanceDelta: 0.08
+  speedMultiplierDelta: 0.02
+  valueDelta: 2
