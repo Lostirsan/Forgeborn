@@ -28,5 +28,12 @@ namespace ForgeGame.Data
 
         // Blueprint
         public const string SwordBlueprint = "sword";
+
+        // Bronze mold recipes (weapon the player casts).
+        public const string BronzeSickle = "bronze_sickle";
+        public const string BronzeHammer = "bronze_hammer";
+        public const string BronzeScythe = "bronze_scythe";
+        public const string BronzeKnife = "bronze_knife";
+        public const string BronzePitchfork = "bronze_pitchfork";
     }
 }

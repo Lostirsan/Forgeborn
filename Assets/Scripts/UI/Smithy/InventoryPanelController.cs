@@ -1,4 +1,5 @@
 using ForgeGame.Data;
+using ForgeGame.Localization;
 using ForgeGame.Smithy;
 using TMPro;
 using UnityEngine;
@@ -41,9 +42,44 @@ namespace ForgeGame.UI.Smithy
         private void Awake()
         {
             if (backButton != null) backButton.onClick.AddListener(() => Controller?.ClosePanel());
+            Loc.LocaleChanged += OnLocaleChanged;
+        }
+
+        private void OnDestroy() => Loc.LocaleChanged -= OnLocaleChanged;
+
+        private void OnLocaleChanged()
+        {
+            if (isActiveAndEnabled && Controller != null) Rebuild();
         }
 
         protected override void OnOpened() => Rebuild();
+
+        /// <summary>
+        /// Fills the panel with representative sample cards WITHOUT needing a live game
+        /// (no Controller/Inventory). Used by the art-review scene so designers see the full,
+        /// populated UI in the editor. Safe to call in edit mode.
+        /// </summary>
+        public void BuildPreview()
+        {
+            if (listContent == null) return;
+            RuntimeUI.ClearChildren(listContent);
+            _row = null; _col = 0;
+
+            AddHeader("Руда и материалы");
+            AddCard(null, OreTint, "Железная руда", "× 12", Body);
+            AddCard(null, FuelTint, "Уголь", "× 8", Body);
+            AddCard(null, FluxTint, "Флюс", "× 3", Body);
+            AddCard(null, CompTint, "Кожаная обмотка", "× 4", Body);
+
+            AddHeader("Слитки");
+            AddCard(null, IngotTint, "Бронзовый слиток", "масса 2.4 · чистота 88% · качество 76%", Body);
+
+            AddHeader("Заготовки");
+            AddCard(null, BlankTint, "Заготовка клинка (Бронза)", "плавка 82% · заливка 75%", Body);
+
+            AddHeader("Оружие");
+            AddCard(null, WeaponTint, "Бронзовый меч", "урон 23.8 · проч. 114 · 58 зол.", new Color(0.98f, 0.9f, 0.7f));
+        }
 
         private void Rebuild()
         {
@@ -52,7 +88,7 @@ namespace ForgeGame.UI.Smithy
             var inv = Controller.Inventory;
             RuntimeUI.ClearChildren(listContent);
 
-            AddHeader("Руда и материалы");
+            AddHeader(Loc.Tr("inventory.materials"));
             bool any = false;
             any |= AddStacks(ItemType.Ore, OreTint);
             any |= AddStacks(ItemType.Fuel, FuelTint);
@@ -60,36 +96,38 @@ namespace ForgeGame.UI.Smithy
             any |= AddStacks(ItemType.Component, CompTint);
             if (!any) AddEmpty();
 
-            AddHeader("Слитки");
+            AddHeader(Loc.Tr("inventory.ingots"));
             if (inv.Ingots.Count == 0) AddEmpty();
             foreach (var ig in inv.Ingots)
             {
                 var mat = db.GetMaterial(ig.materialId);
-                string flags = ig.isScrap ? "  [лом]" : ig.porous ? "  [пористый]" : ig.overheated ? "  [перегрет]" : "";
+                string flags = ig.isScrap ? "  " + Loc.Tr("inventory.flag_scrap")
+                             : ig.porous ? "  " + Loc.Tr("inventory.flag_porous")
+                             : ig.overheated ? "  " + Loc.Tr("inventory.flag_overheated") : "";
                 AddCard(mat != null ? mat.Icon : null, IngotTint,
                     mat != null ? mat.DisplayName : ig.materialId,
-                    $"масса {ig.mass:0.0} · чистота {ig.purity * 100f:0}% · качество {ig.smeltingQuality * 100f:0}%{flags}", Body);
+                    Loc.Format("inventory.ingot_detail", $"{ig.mass:0.0}", $"{ig.purity * 100f:0}", $"{ig.smeltingQuality * 100f:0}") + flags, Body);
             }
 
-            AddHeader("Заготовки");
+            AddHeader(Loc.Tr("inventory.blanks"));
             if (inv.CastBlanks.Count == 0) AddEmpty();
             foreach (var cb in inv.CastBlanks)
             {
                 var mat = db.GetMaterial(cb.materialId);
                 var bpc = db.GetBlueprint(cb.blueprintId);
-                string det = $"плавка {cb.meltQuality * 100f:0}% · заливка {cb.pourQuality * 100f:0}%";
-                if (cb.defects != null && cb.defects.Count > 0) det += $" · дефектов: {cb.defects.Count}";
+                string det = Loc.Format("inventory.blank_detail", $"{cb.meltQuality * 100f:0}", $"{cb.pourQuality * 100f:0}");
+                if (cb.defects != null && cb.defects.Count > 0) det += Loc.Format("inventory.defects", cb.defects.Count);
                 AddCard(bpc != null ? bpc.Preview : null, BlankTint,
-                    mat != null ? $"Заготовка клинка ({mat.DisplayName})" : "Литая заготовка", det, Body);
+                    mat != null ? Loc.Format("inventory.blank_name", mat.DisplayName) : Loc.Tr("inventory.blank_cast"), det, Body);
             }
 
-            AddHeader("Оружие");
+            AddHeader(Loc.Tr("inventory.weapons"));
             if (inv.Weapons.Count == 0) AddEmpty();
             foreach (var wp in inv.Weapons)
             {
                 var bp = db.GetBlueprint(wp.blueprintId);
                 AddCard(bp != null ? bp.Preview : null, WeaponTint, wp.customName,
-                    $"урон {wp.damage:0.0} · проч. {wp.durability:0} · {wp.value} зол.", new Color(0.98f, 0.9f, 0.7f));
+                    Loc.Format("inventory.weapon_detail", $"{wp.damage:0.0}", $"{wp.durability:0}", wp.value), new Color(0.98f, 0.9f, 0.7f));
             }
         }
 
@@ -122,7 +160,7 @@ namespace ForgeGame.UI.Smithy
         private void AddEmpty()
         {
             _row = null; _col = 0;
-            RuntimeUI.MakeText(listContent, font, "— пусто —", 20, Dim);
+            RuntimeUI.MakeText(listContent, font, Loc.Tr("common.empty"), 20, Dim);
         }
 
         private Transform NextCell()

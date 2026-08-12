@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ForgeGame.Localization;
 using ForgeGame.Settings;
 using TMPro;
 using UnityEngine;
@@ -55,6 +56,10 @@ namespace ForgeGame.UI.MainMenu
         private GameSettings _snapshot;
         private bool _populating;
         private readonly List<Vector2Int> _resolutions = new List<Vector2Int>();
+
+        // Language selector (Unity Localization). Order = dropdown option order.
+        private static readonly string[] LangCodes = { "ru", "en", "es", "hi" };
+        private static readonly string[] LangNames = { "Русский", "English", "Español", "हिन्दी" };
 
         private void Awake()
         {
@@ -142,7 +147,7 @@ namespace ForgeGame.UI.MainMenu
             if (uiScaleSlider != null) uiScaleSlider.SetValueWithoutNotify(_working.uiScale);
             if (screenShakeToggle != null) screenShakeToggle.SetIsOnWithoutNotify(_working.screenShake);
             if (effectsIntensitySlider != null) effectsIntensitySlider.SetValueWithoutNotify(_working.effectsIntensity);
-            if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(0);
+            if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(CurrentLanguageIndex());
 
             _populating = false;
         }
@@ -153,7 +158,7 @@ namespace ForgeGame.UI.MainMenu
         {
             SetOptions(windowModeDropdown, "Полноэкранный", "Без рамки", "Оконный");
             SetOptions(fpsDropdown, "30", "60", "120", "144", "Без ограничения");
-            SetOptions(languageDropdown, "Русский");
+            SetOptions(languageDropdown, LangNames);
         }
 
         private void BuildResolutionOptions()
@@ -212,6 +217,7 @@ namespace ForgeGame.UI.MainMenu
             if (uiScaleSlider != null) uiScaleSlider.onValueChanged.AddListener(OnUiScaleChanged);
             if (screenShakeToggle != null) screenShakeToggle.onValueChanged.AddListener(OnScreenShakeChanged);
             if (effectsIntensitySlider != null) effectsIntensitySlider.onValueChanged.AddListener(OnEffectsChanged);
+            if (languageDropdown != null) languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
         }
 
         private void UnhookControls()
@@ -229,6 +235,19 @@ namespace ForgeGame.UI.MainMenu
             if (uiScaleSlider != null) uiScaleSlider.onValueChanged.RemoveListener(OnUiScaleChanged);
             if (screenShakeToggle != null) screenShakeToggle.onValueChanged.RemoveListener(OnScreenShakeChanged);
             if (effectsIntensitySlider != null) effectsIntensitySlider.onValueChanged.RemoveListener(OnEffectsChanged);
+            if (languageDropdown != null) languageDropdown.onValueChanged.RemoveListener(OnLanguageChanged);
+        }
+
+        private int CurrentLanguageIndex()
+        {
+            int i = System.Array.IndexOf(LangCodes, Loc.CurrentCode);
+            return i < 0 ? 0 : i;
+        }
+
+        private void OnLanguageChanged(int i)
+        {
+            if (_populating) return;
+            if (i >= 0 && i < LangCodes.Length) Loc.SetLocale(LangCodes[i]);
         }
 
         private void OnMasterChanged(float v) { _working.masterVolume = v; ApplyLive(); }

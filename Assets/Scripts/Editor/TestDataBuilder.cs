@@ -72,10 +72,22 @@ namespace ForgeGame.EditorTools
             var itemBronze = Item(SmithyIds.Bronze, "Бронза", ItemType.Ingot, 8, new Color(0.72f, 0.48f, 0.24f), "Слиток бронзы для переплавки в форму меча.");
 
             // ---- Blueprints ----
+            FoundryArtGenerator.EnsureAll(); // make sure weapon icons exist before wiring previews
             var sword = Blueprint(SmithyIds.SwordBlueprint, "Меч", 3f, 5,
                 new List<float> { 0.25f, 0.55f, 0.75f, 0.9f, 0.5f }, 20f, 1f, 100f, 5f);
             var bronzeSword = Blueprint(SmithyIds.BronzeSword, "Бронзовый меч", 3f, 14,
-                new List<float>(), 22f, 1f, 110f, 6f);
+                new List<float>(), 22f, 1f, 110f, 6f, FoundryArtGenerator.WpSword);
+            // New bronze mold recipes (the player picks one before choosing ore).
+            var bronzeSickle = Blueprint(SmithyIds.BronzeSickle, "Бронзовый серп", 3f, 14,
+                new List<float>(), 16f, 1.3f, 90f, 4f, FoundryArtGenerator.WpSickle);
+            var bronzeHammer = Blueprint(SmithyIds.BronzeHammer, "Бронзовый молот", 3f, 14,
+                new List<float>(), 34f, 0.7f, 130f, 12f, FoundryArtGenerator.WpHammer);
+            var bronzeScythe = Blueprint(SmithyIds.BronzeScythe, "Бронзовая коса", 3f, 14,
+                new List<float>(), 26f, 0.9f, 100f, 6f, FoundryArtGenerator.WpScythe);
+            var bronzeKnife = Blueprint(SmithyIds.BronzeKnife, "Бронзовый нож", 3f, 14,
+                new List<float>(), 12f, 1.6f, 70f, 3f, FoundryArtGenerator.WpKnife);
+            var bronzePitchfork = Blueprint(SmithyIds.BronzePitchfork, "Бронзовые вилы", 3f, 14,
+                new List<float>(), 20f, 1f, 95f, 8f, FoundryArtGenerator.WpPitchfork);
 
             // ---- Components ----
             var guard = Component(SmithyIds.BasicGuard, "Простая гарда", ComponentSlot.Guard, 0.15f, 0.05f, 0f, 3);
@@ -107,7 +119,7 @@ namespace ForgeGame.EditorTools
                 new List<MaterialData> { bronze, iron, steel, silver },
                 new List<OreData> { ironOre, steelOre, silverOre },
                 new List<ItemData> { itemBronze, itemIronOre, itemSteelOre, itemSilverOre, itemCoal, itemFlux },
-                new List<WeaponBlueprintData> { bronzeSword, sword },
+                new List<WeaponBlueprintData> { bronzeSword, sword, bronzeSickle, bronzeHammer, bronzeScythe, bronzeKnife, bronzePitchfork },
                 new List<WeaponComponentData> { guard, handle, pommel },
                 defects);
             EditorUtility.SetDirty(db);
@@ -163,10 +175,15 @@ namespace ForgeGame.EditorTools
         }
 
         private static WeaponBlueprintData Blueprint(string id, string name, float mass, int zones,
-            List<float> shape, float dmg, float speed, float durability, float pen)
+            List<float> shape, float dmg, float speed, float durability, float pen, string previewPath = null)
         {
             var b = GetOrCreate<WeaponBlueprintData>(id);
             b.Configure(id, name, mass, zones, shape, dmg, speed, durability, pen, new List<string>());
+            if (!string.IsNullOrEmpty(previewPath))
+            {
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(previewPath);
+                if (sprite != null) b.SetPreview(sprite);
+            }
             EditorUtility.SetDirty(b);
             return b;
         }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ForgeGame.Data.WeaponBlueprintData
   id: bronze_sword
   displayName: "\u0411\u0440\u043E\u043D\u0437\u043E\u0432\u044B\u0439 \u043C\u0435\u0447"
-  preview: {fileID: 0}
+  preview: {fileID: 21300000, guid: 7656539fba560b9438591c4a68d8d7be, type: 3}
   requiredMetalMass: 3
   bladeZoneCount: 14
   targetShape: []

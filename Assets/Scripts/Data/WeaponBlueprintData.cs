@@ -62,5 +62,7 @@ namespace ForgeGame.Data
             baseDamage = dmg; baseAttackSpeed = speed; baseDurability = durability; baseArmorPenetration = pen;
             allowedMaterialIds = allowed ?? new List<string>();
         }
+
+        public void SetPreview(Sprite sprite) => preview = sprite;
     }
 }

@@ -1,0 +1,328 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: GameText Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: GameText
+  m_TableCollectionNameGuidString: d53693f17c4bd9641bb3fb81221e39e9
+  m_Entries:
+  - m_Id: 2100289536
+    m_Key: common.back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2163204096
+    m_Key: common.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398400
+    m_Key: common.yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398401
+    m_Key: common.no
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398402
+    m_Key: common.confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398403
+    m_Key: common.cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398404
+    m_Key: common.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398405
+    m_Key: menu.play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398406
+    m_Key: menu.continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398407
+    m_Key: menu.settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398408
+    m_Key: menu.credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398409
+    m_Key: menu.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398410
+    m_Key: settings.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398411
+    m_Key: settings.language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398412
+    m_Key: settings.master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398413
+    m_Key: settings.music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398414
+    m_Key: settings.sfx
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398415
+    m_Key: settings.fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398416
+    m_Key: hud.gold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398417
+    m_Key: hud.inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398418
+    m_Key: hud.journal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398419
+    m_Key: inventory.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398420
+    m_Key: inventory.materials
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398421
+    m_Key: inventory.ingots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398422
+    m_Key: inventory.blanks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398423
+    m_Key: inventory.weapons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398424
+    m_Key: foundry.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398425
+    m_Key: foundry.choose_mold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398426
+    m_Key: foundry.temperature
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398427
+    m_Key: foundry.throw_log
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398428
+    m_Key: foundry.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398429
+    m_Key: foundry.too_cold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398430
+    m_Key: weapon.sword
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398431
+    m_Key: weapon.sickle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398432
+    m_Key: weapon.hammer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398433
+    m_Key: weapon.scythe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398434
+    m_Key: weapon.knife
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398435
+    m_Key: weapon.pitchfork
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111780675584
+    m_Key: common.loading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258496
+    m_Key: common.apply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258497
+    m_Key: common.reset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258498
+    m_Key: menu.new_game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258499
+    m_Key: menu.tagline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258500
+    m_Key: settings.tab_sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258501
+    m_Key: settings.tab_graphics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258502
+    m_Key: settings.tab_interface
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258503
+    m_Key: settings.effects_slider
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258504
+    m_Key: settings.mute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258505
+    m_Key: settings.window_mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258506
+    m_Key: settings.resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258507
+    m_Key: settings.vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258508
+    m_Key: settings.fps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258509
+    m_Key: settings.ui_scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258510
+    m_Key: settings.screen_shake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258511
+    m_Key: settings.effects_intensity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995809271808
+    m_Key: foundry.ores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020544
+    m_Key: foundry.close_mold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020545
+    m_Key: foundry.take_blank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020546
+    m_Key: foundry.melting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020547
+    m_Key: foundry.overheat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020548
+    m_Key: foundry.hint_cold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020549
+    m_Key: foundry.hint_melting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020550
+    m_Key: foundry.hint_ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020551
+    m_Key: foundry.hint_overheat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020552
+    m_Key: inventory.ingot_detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020553
+    m_Key: inventory.blank_detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020554
+    m_Key: inventory.blank_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020555
+    m_Key: inventory.blank_cast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020556
+    m_Key: inventory.weapon_detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020557
+    m_Key: inventory.defects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020558
+    m_Key: inventory.flag_scrap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020559
+    m_Key: inventory.flag_porous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020560
+    m_Key: inventory.flag_overheated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020561
+    m_Key: material.bronze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020562
+    m_Key: material.bronze_desc
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 2854768972233179239
+  references:
+    version: 2
+    RefIds:
+    - rid: 2854768972233179239
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1786533286505

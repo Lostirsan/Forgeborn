@@ -31,6 +31,11 @@ MonoBehaviour:
   blueprints:
   - {fileID: 11400000, guid: 759cf5660847b494383d6d8cfeb63060, type: 2}
   - {fileID: 11400000, guid: 1d506827345b29e4a8a22bdf189d5e64, type: 2}
+  - {fileID: 11400000, guid: 11c49385d4cf93b45924cfba27043496, type: 2}
+  - {fileID: 11400000, guid: fa6640c5f912c1445a2342704422e71c, type: 2}
+  - {fileID: 11400000, guid: 7a2355979c86fa4469fd2e0e42b2b223, type: 2}
+  - {fileID: 11400000, guid: b2dafe64c39014944a49a7ecba5c0ed6, type: 2}
+  - {fileID: 11400000, guid: dfe4fc7279574dc4795190002593ba2f, type: 2}
   components:
   - {fileID: 11400000, guid: e75b451795690474682d897dfb356bc1, type: 2}
   - {fileID: 11400000, guid: 8a10383a91b2bcd47a91873ed7a63687, type: 2}

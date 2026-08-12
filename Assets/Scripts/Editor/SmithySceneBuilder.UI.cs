@@ -259,7 +259,7 @@ namespace ForgeGame.EditorTools
         // =====================================================================
 
         private static T AddPanel<T>(PanelId id, string title, Vector2 size, out RectTransform window,
-            float dimAlpha = -1f, Sprite windowSprite = null)
+            float dimAlpha = -1f, Sprite windowSprite = null, string titleKey = null)
             where T : SmithyPanel
         {
             var panel = NewRect("Panel_" + id, _uiRoot);
@@ -279,6 +279,7 @@ namespace ForgeGame.EditorTools
 
             var titleRt = AddLabel(window, title, 0, 0, size.x - 60, 54, 40, Accent, TextAlignmentOptions.Center);
             Anchor(titleRt.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -40), new Vector2(size.x - 60, 54));
+            if (titleKey != null) Localize(titleRt, titleKey);
 
             var comp = panel.gameObject.AddComponent<T>();
             _panels.Add(comp);
@@ -301,9 +302,9 @@ namespace ForgeGame.EditorTools
 
         private static void BuildInventoryPanel()
         {
-            var p = AddPanel<InventoryPanelController>(PanelId.Inventory, "Инвентарь", new Vector2(1100, 820), out var w);
+            var p = AddPanel<InventoryPanelController>(PanelId.Inventory, "Инвентарь", new Vector2(1100, 820), out var w, titleKey: "inventory.title");
             var content = AddScroll(w, 0, 30, 1000, 620);
-            var back = AddButton(w, "Назад", 0, -360, 260, 60);
+            var back = AddButton(w, "Назад", 0, -360, 260, 60); LocalizeBtn(back, "common.back");
             WireComponent(p, so =>
             {
                 SetRef(so, "listContent", content);
@@ -311,6 +312,20 @@ namespace ForgeGame.EditorTools
                 SetRef(so, "backButton", back);
             });
             FinishPanel(p, PanelId.Inventory, back.gameObject);
+        }
+
+        private static void AddRecipeCard(RectTransform parent, FoundryPanelController foundry,
+            string blueprintId, string name, string spritePath, float x, float y, string nameKey = null)
+        {
+            var btn = AddButton(parent, "", x, y, 300, 320);
+            var brt = btn.GetComponent<RectTransform>();
+            var sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            var icon = AddSpriteChild(brt, "Icon", new Vector2(0, 40), new Vector2(190, 190), sprite);
+            icon.preserveAspect = true;
+            var lbl = AddLabel(brt, name, 0, -110, 260, 44, 32, TextLight, TextAlignmentOptions.Center);
+            if (nameKey != null) Localize(lbl, nameKey);
+            var rb = btn.gameObject.AddComponent<FoundryRecipeButton>();
+            rb.Configure(blueprintId, foundry);
         }
 
         private static Image AddUiSprite(RectTransform parent, string name, Vector2 pos, Vector2 size, Sprite sprite, Color color, bool raycast = false)
@@ -326,16 +341,36 @@ namespace ForgeGame.EditorTools
         private static void BuildFoundryPanel()
         {
             // Near-full-screen foundry with a wooden workbench skin.
-            var p = AddPanel<FoundryPanelController>(PanelId.Foundry, "Плавильня", new Vector2(1840, 1010), out var w, 0.9f, _uiWorkbench);
+            var p = AddPanel<FoundryPanelController>(PanelId.Foundry, "Плавильня", new Vector2(1840, 1010), out var w, 0.9f, _uiWorkbench, "foundry.title");
 
             // ---- Left column: ore selection (extensible list) ----
-            AddLabel(w, "Руды", -650, 380, 320, 50, 34, Accent, TextAlignmentOptions.Center);
+            Localize(AddLabel(w, "Руды", -650, 380, 320, 50, 34, Accent, TextAlignmentOptions.Center), "foundry.ores");
             var materialsG = NewChild(w, "MaterialsGroup", new Vector2(-650, 20), new Vector2(360, 760));
             var bronzeCard = AddButton(materialsG, "", 0, 220, 300, 320);
             var brt = bronzeCard.GetComponent<RectTransform>();
             AddSpriteChild(brt, "Icon", new Vector2(0, 46), new Vector2(170, 170), _uiCrucible);
-            AddLabel(brt, "Бронза", 0, -88, 260, 40, 30, TextLight, TextAlignmentOptions.Center);
-            AddLabel(brt, "Тугоплавкая, надёжная", 0, -128, 260, 30, 20, TextDim, TextAlignmentOptions.Center);
+            Localize(AddLabel(brt, "Бронза", 0, -88, 260, 40, 30, TextLight, TextAlignmentOptions.Center), "material.bronze");
+            Localize(AddLabel(brt, "Тугоплавкая, надёжная", 0, -128, 260, 30, 20, TextDim, TextAlignmentOptions.Center), "material.bronze_desc");
+
+            // ---- Recipe (mold) selection — shown FIRST, before choosing ore ----
+            var recipeG = NewChild(w, "RecipeGroup", new Vector2(0, 0), new Vector2(1720, 900));
+            Localize(AddLabel(recipeG, "Выберите форму для отливки", 0, 380, 1300, 60, 40, Accent, TextAlignmentOptions.Center), "foundry.choose_mold");
+            var recipes = new (string id, string name, string sprite, string key)[]
+            {
+                (ForgeGame.Data.SmithyIds.BronzeSword, "Меч", FoundryArtGenerator.WpSword, "weapon.sword"),
+                (ForgeGame.Data.SmithyIds.BronzeSickle, "Серп", FoundryArtGenerator.WpSickle, "weapon.sickle"),
+                (ForgeGame.Data.SmithyIds.BronzeHammer, "Молот", FoundryArtGenerator.WpHammer, "weapon.hammer"),
+                (ForgeGame.Data.SmithyIds.BronzeScythe, "Коса", FoundryArtGenerator.WpScythe, "weapon.scythe"),
+                (ForgeGame.Data.SmithyIds.BronzeKnife, "Нож", FoundryArtGenerator.WpKnife, "weapon.knife"),
+                (ForgeGame.Data.SmithyIds.BronzePitchfork, "Вилы", FoundryArtGenerator.WpPitchfork, "weapon.pitchfork"),
+            };
+            for (int i = 0; i < recipes.Length; i++)
+            {
+                int col = i % 3, row = i / 3;
+                float rx = (col - 1) * 500f;
+                float ry = 150f - row * 380f;
+                AddRecipeCard(recipeG, p, recipes[i].id, recipes[i].name, recipes[i].sprite, rx, ry, recipes[i].key);
+            }
 
             // ---- One unified foundry view: central hanging crucible + mould below it ----
             var foundryG = NewChild(w, "FoundryGroup", new Vector2(140, 10), new Vector2(1500, 940));
@@ -389,7 +424,7 @@ namespace ForgeGame.EditorTools
             var board = NewChild(foundryG, "TempBoard", new Vector2(-360, 250), new Vector2(300, 200));
             var plate = board.gameObject.AddComponent<Image>();
             plate.sprite = _white; plate.color = new Color(0.12f, 0.10f, 0.09f, 0.92f);
-            AddLabel(board, "Температура", 0, 70, 280, 34, 24, TextDim, TextAlignmentOptions.Center);
+            Localize(AddLabel(board, "Температура", 0, 70, 280, 34, 24, TextDim, TextAlignmentOptions.Center), "foundry.temperature");
             var temp = AddLabel(board, "", 0, 16, 280, 62, 46, Accent, TextAlignmentOptions.Center);
             var tempBarBg = AddUiSprite(board, "TempBarBg", new Vector2(0, -62), new Vector2(250, 26), _white, new Color(0f, 0f, 0f, 0.5f));
             tempBarBg.raycastTarget = false;
@@ -404,20 +439,21 @@ namespace ForgeGame.EditorTools
             dragLog.raycastTarget = true; dragLog.rectTransform.localRotation = Quaternion.Euler(0, 0, 3f);
             var logDrag = dragLog.gameObject.AddComponent<FoundryLogDrag>();
             WireComponent(logDrag, so => { SetRef(so, "fireTarget", fire.rectTransform); SetRef(so, "foundry", p); });
-            AddLabel(logPile, "Тащите бревно в огонь", 0, -116, 340, 34, 22, Accent, TextAlignmentOptions.Center);
+            Localize(AddLabel(logPile, "Тащите бревно в огонь", 0, -116, 340, 34, 22, Accent, TextAlignmentOptions.Center), "foundry.throw_log");
 
             // Labels + action buttons (right side / bottom).
             var state = AddLabel(foundryG, "", 470, 250, 560, 60, 40, TextLight, TextAlignmentOptions.Center);
             var pourStatus = AddLabel(foundryG, "", 470, 100, 620, 50, 28, Accent, TextAlignmentOptions.Center);
-            var pourFinish = AddButton(foundryG, "Закрыть форму", 470, -120, 380, 74);
-            var extract = AddButton(foundryG, "Забрать заготовку", 470, -120, 380, 74);
+            var pourFinish = AddButton(foundryG, "Закрыть форму", 470, -120, 380, 74); LocalizeBtn(pourFinish, "foundry.close_mold");
+            var extract = AddButton(foundryG, "Забрать заготовку", 470, -120, 380, 74); LocalizeBtn(extract, "foundry.take_blank");
 
             var status = AddLabel(w, "", 140, -430, 1300, 44, 24, TextDim, TextAlignmentOptions.Center);
             var start = AddButton(w, "Начать плавку (3 бронзы)", 0, -430, 520, 74); // hidden; kept for wiring
-            var back = AddButton(w, "Назад", 780, -430, 200, 64);
+            var back = AddButton(w, "Назад", 780, -430, 200, 64); LocalizeBtn(back, "common.back");
 
             WireComponent(p, so =>
             {
+                SetRef(so, "recipeGroup", recipeG.gameObject);
                 SetRef(so, "materialsGroup", materialsG.gameObject);
                 SetRef(so, "bronzeCard", bronzeCard);
                 SetRef(so, "foundryGroup", foundryG.gameObject);
@@ -1050,6 +1086,19 @@ namespace ForgeGame.EditorTools
             if (_font != null) t.font = _font;
             t.text = text; t.fontSize = size; t.color = color; t.alignment = align; t.raycastTarget = false;
             return t;
+        }
+
+        /// <summary>Attach a LocalizedText so this label follows the active language by key.</summary>
+        private static void Localize(TMP_Text t, string key)
+        {
+            if (t != null) t.gameObject.AddComponent<ForgeGame.Localization.LocalizedText>().SetKey(key);
+        }
+
+        private static void LocalizeBtn(Button b, string key)
+        {
+            if (b == null) return;
+            var t = b.transform.Find("Label")?.GetComponent<TMP_Text>();
+            Localize(t, key);
         }
 
         private static Button AddButton(RectTransform parent, string label, float x, float y, float w, float h)

@@ -1,0 +1,324 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: GameText_es
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: d53693f17c4bd9641bb3fb81221e39e9, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 2100289536
+    m_Localized: "Atr\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2163204096
+    m_Localized: Cerrar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398400
+    m_Localized: "S\xED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398401
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398402
+    m_Localized: Confirmar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398403
+    m_Localized: Cancelar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398404
+    m_Localized: "\u2014 vac\xEDo \u2014"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398405
+    m_Localized: Jugar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398406
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398407
+    m_Localized: Ajustes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398408
+    m_Localized: "Cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398409
+    m_Localized: Salir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398410
+    m_Localized: Ajustes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398411
+    m_Localized: Idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398412
+    m_Localized: Volumen general
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398413
+    m_Localized: "M\xFAsica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398414
+    m_Localized: Efectos de sonido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398415
+    m_Localized: Pantalla completa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398416
+    m_Localized: Oro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398417
+    m_Localized: Inventario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398418
+    m_Localized: Diario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398419
+    m_Localized: Inventario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398420
+    m_Localized: Minerales y materiales
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398421
+    m_Localized: Lingotes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398422
+    m_Localized: Piezas fundidas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398423
+    m_Localized: Armas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398424
+    m_Localized: "Fundici\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398425
+    m_Localized: Elige un molde para fundir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398426
+    m_Localized: Temperatura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398427
+    m_Localized: Arrastra un tronco al fuego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398428
+    m_Localized: Fundido listo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398429
+    m_Localized: "Demasiado fr\xEDo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398430
+    m_Localized: Espada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398431
+    m_Localized: Hoz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398432
+    m_Localized: Martillo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398433
+    m_Localized: "Guada\xF1a"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398434
+    m_Localized: Cuchillo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398435
+    m_Localized: Horca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111780675584
+    m_Localized: "Cargando\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258496
+    m_Localized: Aplicar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258497
+    m_Localized: Restablecer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258498
+    m_Localized: Nueva partida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258499
+    m_Localized: Forja. Desciende. Descubre.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258500
+    m_Localized: Sonido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258501
+    m_Localized: "Gr\xE1ficos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258502
+    m_Localized: Interfaz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258503
+    m_Localized: Efectos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258504
+    m_Localized: Silenciar todo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258505
+    m_Localized: Modo de ventana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258506
+    m_Localized: "Resoluci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258507
+    m_Localized: "Sincronizaci\xF3n vertical"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258508
+    m_Localized: "L\xEDmite de FPS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258509
+    m_Localized: Escala de interfaz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258510
+    m_Localized: "Vibraci\xF3n de pantalla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258511
+    m_Localized: Intensidad de efectos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995809271808
+    m_Localized: Minerales
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020544
+    m_Localized: Cerrar molde
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020545
+    m_Localized: Tomar pieza
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020546
+    m_Localized: Fundiendo mineral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020547
+    m_Localized: "Sobrecalent\xE1ndose \u2014 el metal se estropea"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020548
+    m_Localized: "El fuego se enfri\xF3 \u2014 a\xF1ade un tronco o el mineral no
+      se fundir\xE1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020549
+    m_Localized: "Fundiendo \u2014 mant\xE9n el calor. Verter pronto = forja d\xE9bil."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020550
+    m_Localized: "Fundido listo \u2014 inclina el crisol para llenar el molde."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020551
+    m_Localized: "El metal se sobrecalienta y se estropea \u2014 \xA1vierte ya!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020552
+    m_Localized: "masa {0} \xB7 pureza {1}% \xB7 calidad {2}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020553
+    m_Localized: "fundido {0}% \xB7 vertido {1}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020554
+    m_Localized: Pieza de hoja ({0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020555
+    m_Localized: Pieza fundida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020556
+    m_Localized: "da\xF1o {0} \xB7 dur {1} \xB7 {2} oro"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020557
+    m_Localized: " \xB7 defectos: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020558
+    m_Localized: '[chatarra]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020559
+    m_Localized: '[poroso]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020560
+    m_Localized: '[sobrecalentado]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020561
+    m_Localized: Bronce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020562
+    m_Localized: Refractario, fiable
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

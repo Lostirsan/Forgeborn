@@ -1,0 +1,323 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: GameText_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: d53693f17c4bd9641bb3fb81221e39e9, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 2100289536
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2163204096
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398400
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398401
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398402
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398403
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398404
+    m_Localized: "\u2014 empty \u2014"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398405
+    m_Localized: Play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398406
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398407
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398408
+    m_Localized: Credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398409
+    m_Localized: Quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398410
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398411
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398412
+    m_Localized: Master volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398413
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398414
+    m_Localized: Sound effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398415
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398416
+    m_Localized: Gold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398417
+    m_Localized: Inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398418
+    m_Localized: Journal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398419
+    m_Localized: Inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398420
+    m_Localized: Ores & materials
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398421
+    m_Localized: Ingots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398422
+    m_Localized: Blanks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398423
+    m_Localized: Weapons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398424
+    m_Localized: Foundry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398425
+    m_Localized: Choose a mold to cast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398426
+    m_Localized: Temperature
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398427
+    m_Localized: Drag a log into the fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398428
+    m_Localized: Melt ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398429
+    m_Localized: Too cold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398430
+    m_Localized: Sword
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398431
+    m_Localized: Sickle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398432
+    m_Localized: Hammer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398433
+    m_Localized: Scythe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398434
+    m_Localized: Knife
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167398435
+    m_Localized: Pitchfork
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111780675584
+    m_Localized: "Loading\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258496
+    m_Localized: Apply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258497
+    m_Localized: Reset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258498
+    m_Localized: New Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258499
+    m_Localized: Craft. Descend. Discover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258500
+    m_Localized: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258501
+    m_Localized: Graphics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258502
+    m_Localized: Interface
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258503
+    m_Localized: Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258504
+    m_Localized: Mute all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258505
+    m_Localized: Window mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258506
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258507
+    m_Localized: V-Sync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258508
+    m_Localized: FPS limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258509
+    m_Localized: UI scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258510
+    m_Localized: Screen shake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2111793258511
+    m_Localized: Effects intensity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995809271808
+    m_Localized: Ores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020544
+    m_Localized: Close mold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020545
+    m_Localized: Take blank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020546
+    m_Localized: Ore melting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020547
+    m_Localized: "Overheating \u2014 metal spoiling"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020548
+    m_Localized: "The fire cooled \u2014 add a log or the ore won't melt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020549
+    m_Localized: "Ore melting \u2014 keep it hot. Pour early = weak forging."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020550
+    m_Localized: "Melt ready \u2014 tilt the crucible to fill the mold."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020551
+    m_Localized: "Metal is overheating and spoiling \u2014 pour now!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020552
+    m_Localized: "mass {0} \xB7 purity {1}% \xB7 quality {2}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020553
+    m_Localized: "melt {0}% \xB7 pour {1}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020554
+    m_Localized: Blade blank ({0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020555
+    m_Localized: Cast blank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020556
+    m_Localized: "dmg {0} \xB7 dur {1} \xB7 {2} gold"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020557
+    m_Localized: " \xB7 defects: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020558
+    m_Localized: '[scrap]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020559
+    m_Localized: '[porous]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020560
+    m_Localized: '[overheated]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020561
+    m_Localized: Bronze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4995847020562
+    m_Localized: Refractory, reliable
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

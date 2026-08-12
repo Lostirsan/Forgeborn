@@ -51,6 +51,14 @@ namespace ForgeGame.EditorTools
         public const string PourCrucibleFwd = Dir + "/Foundry_PourCrucibleFwd.png"; // tilted TOWARD player: open bowl pouring down centre
         public const string Fire = Dir + "/Foundry_Fire.png";  // flames under the crucible while melting
         public const string Log = Dir + "/Foundry_Log.png";    // firewood the player throws into the fire
+
+        // Weapon recipe icons (mold choices).
+        public const string WpSword = Dir + "/Weapon_Sword.png";
+        public const string WpSickle = Dir + "/Weapon_Sickle.png";
+        public const string WpHammer = Dir + "/Weapon_Hammer.png";
+        public const string WpScythe = Dir + "/Weapon_Scythe.png";
+        public const string WpKnife = Dir + "/Weapon_Knife.png";
+        public const string WpPitchfork = Dir + "/Weapon_Pitchfork.png";
         public const string WorkbenchPanel = Dir + "/Foundry_WorkbenchPanel.png";
         public const string Tang = Dir + "/Foundry_Tang.png"; // metal rod the hilt is threaded onto
         public const string MeltGauge = Dir + "/Foundry_MeltGauge.png";   // semicircular melt gauge (LOW→good→overheat)
@@ -111,6 +119,12 @@ namespace ForgeGame.EditorTools
             Make(force, PourCrucibleFwd, MakePourCrucibleForward);
             Make(force, Fire, MakeFire);
             Make(force, Log, MakeLog);
+            Make(force, WpSword, MakeWpSword);
+            Make(force, WpSickle, MakeWpSickle);
+            Make(force, WpHammer, MakeWpHammer);
+            Make(force, WpScythe, MakeWpScythe);
+            Make(force, WpKnife, MakeWpKnife);
+            Make(force, WpPitchfork, MakeWpPitchfork);
             Make(force, WorkbenchPanel, MakeWorkbenchPanel);
             Make(force, Tang, MakeTang);
             Make(force, MeltGauge, MakeMeltGauge);
@@ -614,6 +628,89 @@ namespace ForgeGame.EditorTools
             c.Ring((int)(w * 0.90f), h / 2, (int)(h * 0.13f), (int)(h * 0.08f), new Color(0.36f, 0.24f, 0.14f));
             c.Grain((int)(w * 0.12f), (int)(h * 0.26f), (int)(w * 0.84f), (int)(h * 0.74f), false, 0.12f, 5);
             c.Save(Log, 100f);
+        }
+
+        // ---- Weapon recipe icons (128x128, metal on wood, transparent bg) ----
+        private static readonly Color WMetal = new Color(0.62f, 0.65f, 0.72f);
+        private static readonly Color WMetalDark = new Color(0.40f, 0.42f, 0.48f);
+        private static readonly Color WMetalHi = new Color(0.86f, 0.89f, 0.96f);
+        private static readonly Color WWood = new Color(0.40f, 0.26f, 0.14f);
+        private static readonly Color WWoodHi = new Color(0.52f, 0.36f, 0.20f);
+
+        private static void Arc(PixelCanvas c, float cx, float cy, float r, float a0, float a1, int thick, Color col)
+        {
+            const int steps = 64;
+            for (int i = 0; i <= steps; i++)
+            {
+                float a = Mathf.Deg2Rad * Mathf.Lerp(a0, a1, i / (float)steps);
+                c.Disc((int)(cx + r * Mathf.Cos(a)), (int)(cy + r * Mathf.Sin(a)), thick, col);
+            }
+        }
+
+        private static void MakeWpSword()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            c.Disc((int)(w * 0.5f), (int)(h * 0.10f), 7, WMetalDark);                       // pommel
+            c.VGrad((int)(w * 0.45f), (int)(h * 0.12f), (int)(w * 0.55f), (int)(h * 0.30f), WWood, WWoodHi); // grip
+            c.Rect((int)(w * 0.32f), (int)(h * 0.29f), (int)(w * 0.68f), (int)(h * 0.35f), WMetalDark); // guard
+            c.Tri(w / 2, (int)(h * 0.96f), (int)(w * 0.10f), (int)(h * 0.62f), WMetal);      // blade
+            c.Rect(w / 2 - 2, (int)(h * 0.36f), w / 2 + 2, (int)(h * 0.90f), WMetalHi);      // fuller highlight
+            c.Save(WpSword, 100f);
+        }
+
+        private static void MakeWpKnife()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.42f), (int)(h * 0.08f), (int)(w * 0.58f), (int)(h * 0.40f), WWood, WWoodHi); // handle
+            c.Rect((int)(w * 0.40f), (int)(h * 0.40f), (int)(w * 0.60f), (int)(h * 0.44f), WMetalDark);      // bolster
+            c.Tri((int)(w * 0.54f), (int)(h * 0.94f), (int)(w * 0.11f), (int)(h * 0.50f), WMetal);           // blade
+            c.Rect((int)(w * 0.45f), (int)(h * 0.46f), (int)(w * 0.49f), (int)(h * 0.9f), WMetalHi);          // edge highlight
+            c.Save(WpKnife, 100f);
+        }
+
+        private static void MakeWpHammer()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.46f), (int)(h * 0.06f), (int)(w * 0.54f), (int)(h * 0.74f), WWood, WWoodHi);  // shaft
+            c.VGrad((int)(w * 0.26f), (int)(h * 0.66f), (int)(w * 0.74f), (int)(h * 0.90f), WMetalDark, WMetal); // head
+            c.Rect((int)(w * 0.26f), (int)(h * 0.66f), (int)(w * 0.31f), (int)(h * 0.90f), WMetalDark);        // left band
+            c.Rect((int)(w * 0.69f), (int)(h * 0.66f), (int)(w * 0.74f), (int)(h * 0.90f), WMetalDark);        // right band
+            c.Rect((int)(w * 0.30f), (int)(h * 0.86f), (int)(w * 0.70f), (int)(h * 0.89f), WMetalHi);          // top glint
+            c.Save(WpHammer, 100f);
+        }
+
+        private static void MakeWpSickle()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.40f), (int)(h * 0.06f), (int)(w * 0.56f), (int)(h * 0.36f), WWood, WWoodHi);  // handle
+            Arc(c, w * 0.40f, h * 0.40f, w * 0.34f, -25f, 165f, 5, WMetal);                                  // crescent blade
+            Arc(c, w * 0.40f, h * 0.40f, w * 0.30f, -20f, 160f, 2, WMetalHi);                                // inner edge
+            c.Save(WpSickle, 100f);
+        }
+
+        private static void MakeWpScythe()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.47f), (int)(h * 0.06f), (int)(w * 0.53f), (int)(h * 0.82f), WWood, WWoodHi);  // long snath
+            c.Rect((int)(w * 0.40f), (int)(h * 0.44f), (int)(w * 0.52f), (int)(h * 0.50f), WWoodHi);          // hand grip nib
+            Arc(c, w * 0.50f, h * 0.74f, w * 0.34f, 90f, 205f, 5, WMetal);                                   // curved blade
+            Arc(c, w * 0.50f, h * 0.74f, w * 0.30f, 95f, 200f, 2, WMetalHi);
+            c.Save(WpScythe, 100f);
+        }
+
+        private static void MakeWpPitchfork()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.47f), (int)(h * 0.05f), (int)(w * 0.53f), (int)(h * 0.58f), WWood, WWoodHi);  // handle
+            c.Rect((int)(w * 0.28f), (int)(h * 0.56f), (int)(w * 0.72f), (int)(h * 0.62f), WMetalDark);        // crossbar
+            float[] px = { 0.32f, 0.50f, 0.68f };
+            foreach (var fx in px)
+            {
+                int x = (int)(w * fx);
+                c.Rect(x - 3, (int)(h * 0.60f), x + 3, (int)(h * 0.86f), WMetal);          // prong
+                c.Tri(x, (int)(h * 0.94f), 3, (int)(h * 0.10f), WMetalHi);                 // pointed tip
+            }
+            c.Save(WpPitchfork, 100f);
         }
 
         // Solid axis-aligned ellipse (no native primitive in PixelCanvas).

@@ -1,4 +1,5 @@
 using ForgeGame.Data;
+using ForgeGame.Localization;
 using ForgeGame.Research;
 using ForgeGame.Smithy;
 using ForgeGame.Smithy.Casting;
@@ -41,6 +42,7 @@ namespace ForgeGame.UI.Smithy
         [SerializeField] private float spillAngle = 70f;       // over-tilt → stream overshoots the inlet
 
         [Header("Groups")]
+        [SerializeField] private GameObject recipeGroup;    // choose the weapon/mold FIRST
         [SerializeField] private GameObject materialsGroup;
         [SerializeField] private Button bronzeCard;
         [SerializeField] private GameObject foundryGroup;   // single unified crucible + mould view
@@ -83,6 +85,7 @@ namespace ForgeGame.UI.Smithy
 
         private bool _open;
         private float _coolTimer;
+        private string _selectedBlueprintId; // chosen mold/recipe (null = not chosen yet)
 
         private ForgeSession Session => Controller.Session.Current;
         private MaterialData Bronze => Controller.Database.GetMaterial(SmithyIds.Bronze);
@@ -100,11 +103,25 @@ namespace ForgeGame.UI.Smithy
         {
             _open = true;
             _coolTimer = 0f;
+            // A fresh visit starts at recipe selection (unless a craft is already underway).
+            if (!Controller.Session.HasActiveSession) _selectedBlueprintId = null;
             ApplyPhase();
             RefreshMelting();
         }
 
-        protected override void OnClosed() => _open = false;
+        /// <summary>Player picked a mold/recipe; reveal the ore selection for it.</summary>
+        public void SelectRecipe(string blueprintId)
+        {
+            _selectedBlueprintId = blueprintId;
+            ApplyPhase();
+        }
+
+        protected override void OnClosed()
+        {
+            _open = false;
+            // Forget the recipe choice if nothing is being crafted, so reopening starts fresh.
+            if (!Controller.Session.HasActiveSession) _selectedBlueprintId = null;
+        }
 
         private void Update()
         {
@@ -130,7 +147,7 @@ namespace ForgeGame.UI.Smithy
             Controller.Inventory.RemoveItem(SmithyIds.Bronze, BronzeCost);
             var s = Controller.Session.StartNewSession();
             s.selectedMaterialId = SmithyIds.Bronze;
-            s.blueprintId = SmithyIds.BronzeSword;
+            s.blueprintId = string.IsNullOrEmpty(_selectedBlueprintId) ? SmithyIds.BronzeSword : _selectedBlueprintId;
             // Fire starts lit but coolish; the player feeds logs to keep the ore melting.
             s.meltTemperature = startTemp;
             s.meltQuality = 0f;
@@ -221,19 +238,19 @@ namespace ForgeGame.UI.Smithy
             if (tempLabel != null) { tempLabel.text = $"{temp:0}°"; tempLabel.color = tcol; }
             if (tempBar != null) { tempBar.fillAmount = Mathf.Clamp01(Mathf.InverseLerp(20f, maxTemp, temp)); tempBar.color = tcol; }
 
-            string state = tooCold ? "Слишком холодно"
-                : p < readyFraction ? "Руда плавится"
-                : p <= 1f ? "Расплав готов"
-                : "Перегрев — металл портится";
+            string state = tooCold ? Loc.Tr("foundry.too_cold")
+                : p < readyFraction ? Loc.Tr("foundry.melting")
+                : p <= 1f ? Loc.Tr("foundry.ready")
+                : Loc.Tr("foundry.overheat");
             if (stateLabel != null) stateLabel.text = state;
 
             // Needle sweeps cold→hot; green band = good window, red = overcook.
             if (gaugeNeedle != null) gaugeNeedle.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(82f, -82f, GaugeHeat01()));
             if (statusLabel != null)
-                statusLabel.text = tooCold ? "Огонь остыл — подкиньте бревно, иначе руда не плавится."
-                    : p < readyFraction ? "Руда плавится — держите жар. Рано лить = слабая ковка."
-                    : p <= 1f ? "Расплав готов — наклоните котёл, чтобы залить форму."
-                    : "Металл перегревается и портится — лейте скорее!";
+                statusLabel.text = tooCold ? Loc.Tr("foundry.hint_cold")
+                    : p < readyFraction ? Loc.Tr("foundry.hint_melting")
+                    : p <= 1f ? Loc.Tr("foundry.hint_ready")
+                    : Loc.Tr("foundry.hint_overheat");
 
             if (crucibleMoltenImage != null)
             {
@@ -443,8 +460,10 @@ namespace ForgeGame.UI.Smithy
             bool mould = stage == ForgeStage.Pouring || stage == ForgeStage.Cooling || stage == ForgeStage.CastBlankReady;
 
             // One unified view: crucible (+ gauge) always visible while crafting; the mould
-            // below appears once we start pouring.
-            if (materialsGroup != null) materialsGroup.SetActive(selecting);
+            // below appears once we start pouring. Before crafting: recipe (mold) choice, then ore.
+            bool choosingRecipe = selecting && string.IsNullOrEmpty(_selectedBlueprintId);
+            if (recipeGroup != null) recipeGroup.SetActive(choosingRecipe);
+            if (materialsGroup != null) materialsGroup.SetActive(selecting && !choosingRecipe);
             if (foundryGroup != null) foundryGroup.SetActive(crafting);
             if (mouldObject != null) mouldObject.SetActive(mould);
             // Heating-only props (gauge, temperature board, fire, firewood) show while melting.

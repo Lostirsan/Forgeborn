@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using ForgeGame.Audio;
+using ForgeGame.Localization;
 using ForgeGame.Settings;
 using ForgeGame.UI.Common;
 using ForgeGame.UI.MainMenu;
@@ -537,7 +538,7 @@ namespace ForgeGame.EditorTools
             AddLayoutHeight(titleRt, 120);
 
             var subRt = NewRect("Subtitle", branding);
-            AddText(subRt, "Craft. Descend. Discover.", 30, TextDim, TextAlignmentOptions.Left);
+            Localize(AddText(subRt, "Craft. Descend. Discover.", 30, TextDim, TextAlignmentOptions.Left), "menu.tagline");
             AddLayoutHeight(subRt, 40);
         }
 
@@ -557,14 +558,12 @@ namespace ForgeGame.EditorTools
             vlg.childControlWidth = true; vlg.childControlHeight = true;
             vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
 
-            return new MainButtonRefs
-            {
-                Continue = BuildMenuButton(container, "Продолжить", 420, 66),
-                NewGame = BuildMenuButton(container, "Новая игра", 420, 66),
-                Settings = BuildMenuButton(container, "Настройки", 420, 66),
-                Credits = BuildMenuButton(container, "Авторы", 420, 66),
-                Quit = BuildMenuButton(container, "Выход", 420, 66)
-            };
+            var cont = BuildMenuButton(container, "Продолжить", 420, 66, out var lCont); Localize(lCont, "menu.continue");
+            var ng = BuildMenuButton(container, "Новая игра", 420, 66, out var lNg); Localize(lNg, "menu.new_game");
+            var set = BuildMenuButton(container, "Настройки", 420, 66, out var lSet); Localize(lSet, "menu.settings");
+            var cr = BuildMenuButton(container, "Авторы", 420, 66, out var lCr); Localize(lCr, "menu.credits");
+            var quit = BuildMenuButton(container, "Выход", 420, 66, out var lQuit); Localize(lQuit, "menu.quit");
+            return new MainButtonRefs { Continue = cont, NewGame = ng, Settings = set, Credits = cr, Quit = quit };
         }
 
         private struct FooterRefs { public TMP_Text Version; }
@@ -615,7 +614,7 @@ namespace ForgeGame.EditorTools
             var titleRt = NewRect("Title", window);
             Anchor(titleRt, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                 new Vector2(0, -46), new Vector2(1000, 60));
-            AddText(titleRt, "Настройки", 46, TitleCol, TextAlignmentOptions.Center);
+            Localize(AddText(titleRt, "Настройки", 46, TitleCol, TextAlignmentOptions.Center), "settings.title");
 
             // Tabs
             var tabs = NewRect("Tabs", window);
@@ -625,9 +624,9 @@ namespace ForgeGame.EditorTools
             tabsHl.spacing = 12; tabsHl.childAlignment = TextAnchor.MiddleCenter;
             tabsHl.childControlWidth = true; tabsHl.childControlHeight = true;
             tabsHl.childForceExpandWidth = true; tabsHl.childForceExpandHeight = true;
-            var soundTab = BuildMenuButton(tabs, "Звук", 220, 52);
-            var graphicsTab = BuildMenuButton(tabs, "Графика", 220, 52);
-            var interfaceTab = BuildMenuButton(tabs, "Интерфейс", 220, 52);
+            var soundTab = BuildMenuButton(tabs, "Звук", 220, 52, out var lTabSound); Localize(lTabSound, "settings.tab_sound");
+            var graphicsTab = BuildMenuButton(tabs, "Графика", 220, 52, out var lTabGfx); Localize(lTabGfx, "settings.tab_graphics");
+            var interfaceTab = BuildMenuButton(tabs, "Интерфейс", 220, 52, out var lTabUi); Localize(lTabUi, "settings.tab_interface");
 
             // Sections host
             var host = NewRect("Sections", window);
@@ -635,22 +634,22 @@ namespace ForgeGame.EditorTools
                 new Vector2(0, -180), new Vector2(1040, 520));
 
             var soundSection = BuildSection(host);
-            var master = BuildSliderRow(soundSection, "Общая громкость");
-            var music = BuildSliderRow(soundSection, "Музыка");
-            var sfx = BuildSliderRow(soundSection, "Эффекты");
-            var mute = BuildToggleRow(soundSection, "Отключить весь звук");
+            var master = BuildSliderRow(soundSection, "Общая громкость", "settings.master");
+            var music = BuildSliderRow(soundSection, "Музыка", "settings.music");
+            var sfx = BuildSliderRow(soundSection, "Эффекты", "settings.effects_slider");
+            var mute = BuildToggleRow(soundSection, "Отключить весь звук", "settings.mute");
 
             var graphicsSection = BuildSection(host);
-            var windowMode = BuildDropdownRow(graphicsSection, "Режим экрана");
-            var resolution = BuildDropdownRow(graphicsSection, "Разрешение");
-            var vsync = BuildToggleRow(graphicsSection, "Вертикальная синхронизация");
-            var fps = BuildDropdownRow(graphicsSection, "Ограничение FPS");
+            var windowMode = BuildDropdownRow(graphicsSection, "Режим экрана", "settings.window_mode");
+            var resolution = BuildDropdownRow(graphicsSection, "Разрешение", "settings.resolution");
+            var vsync = BuildToggleRow(graphicsSection, "Вертикальная синхронизация", "settings.vsync");
+            var fps = BuildDropdownRow(graphicsSection, "Ограничение FPS", "settings.fps");
 
             var interfaceSection = BuildSection(host);
-            var uiScale = BuildSliderRow(interfaceSection, "Масштаб интерфейса");
-            var shake = BuildToggleRow(interfaceSection, "Дрожание экрана");
-            var effects = BuildSliderRow(interfaceSection, "Интенсивность эффектов");
-            var language = BuildDropdownRow(interfaceSection, "Язык");
+            var uiScale = BuildSliderRow(interfaceSection, "Масштаб интерфейса", "settings.ui_scale");
+            var shake = BuildToggleRow(interfaceSection, "Дрожание экрана", "settings.screen_shake");
+            var effects = BuildSliderRow(interfaceSection, "Интенсивность эффектов", "settings.effects_intensity");
+            var language = BuildDropdownRow(interfaceSection, "Язык", "settings.language");
 
             // Footer buttons
             var foot = NewRect("Footer", window);
@@ -660,9 +659,9 @@ namespace ForgeGame.EditorTools
             footHl.spacing = 20; footHl.childAlignment = TextAnchor.MiddleCenter;
             footHl.childControlWidth = true; footHl.childControlHeight = true;
             footHl.childForceExpandWidth = true; footHl.childForceExpandHeight = true;
-            var applyBtn = BuildMenuButton(foot, "Применить", 230, 58);
-            var resetBtn = BuildMenuButton(foot, "Сбросить", 230, 58);
-            backButton = BuildMenuButton(foot, "Назад", 230, 58);
+            var applyBtn = BuildMenuButton(foot, "Применить", 230, 58, out var lApply); Localize(lApply, "common.apply");
+            var resetBtn = BuildMenuButton(foot, "Сбросить", 230, 58, out var lReset); Localize(lReset, "common.reset");
+            backButton = BuildMenuButton(foot, "Назад", 230, 58, out var lBack); Localize(lBack, "common.back");
 
             WireComponent(ctrl, so =>
             {
@@ -708,7 +707,7 @@ namespace ForgeGame.EditorTools
             return section;
         }
 
-        private static RectTransform BuildRow(RectTransform section, string label)
+        private static RectTransform BuildRow(RectTransform section, string label, string key = null)
         {
             var row = NewRect("Row", section);
             AddLayoutHeight(row, 48);
@@ -718,15 +717,16 @@ namespace ForgeGame.EditorTools
             hl.childForceExpandWidth = false; hl.childForceExpandHeight = true;
 
             var lblRt = NewRect("Label", row);
-            AddText(lblRt, label, 26, TextLight, TextAlignmentOptions.Left);
+            var lbl = AddText(lblRt, label, 26, TextLight, TextAlignmentOptions.Left);
+            if (key != null) Localize(lbl, key);
             var le = lblRt.gameObject.AddComponent<LayoutElement>();
             le.preferredWidth = 430; le.minWidth = 430; le.flexibleWidth = 0;
             return row;
         }
 
-        private static Slider BuildSliderRow(RectTransform section, string label)
+        private static Slider BuildSliderRow(RectTransform section, string label, string key = null)
         {
-            var row = BuildRow(section, label);
+            var row = BuildRow(section, label, key);
             var go = DefaultControls.CreateSlider(_uiRes);
             go.transform.SetParent(row, false);
             var sl = go.GetComponent<Slider>();
@@ -737,9 +737,9 @@ namespace ForgeGame.EditorTools
             return sl;
         }
 
-        private static Toggle BuildToggleRow(RectTransform section, string label)
+        private static Toggle BuildToggleRow(RectTransform section, string label, string key = null)
         {
-            var row = BuildRow(section, label);
+            var row = BuildRow(section, label, key);
             var go = DefaultControls.CreateToggle(_uiRes);
             go.transform.SetParent(row, false);
             var tg = go.GetComponent<Toggle>();
@@ -751,9 +751,9 @@ namespace ForgeGame.EditorTools
             return tg;
         }
 
-        private static TMP_Dropdown BuildDropdownRow(RectTransform section, string label)
+        private static TMP_Dropdown BuildDropdownRow(RectTransform section, string label, string key = null)
         {
-            var row = BuildRow(section, label);
+            var row = BuildRow(section, label, key);
             var go = TMP_DefaultControls.CreateDropdown(_tmpRes);
             go.transform.SetParent(row, false);
             var dd = go.GetComponent<TMP_Dropdown>();
@@ -814,7 +814,7 @@ namespace ForgeGame.EditorTools
             var titleRt = NewRect("Title", window);
             Anchor(titleRt, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                 new Vector2(0, -46), new Vector2(800, 60));
-            AddText(titleRt, "Авторы", 46, TitleCol, TextAlignmentOptions.Center);
+            Localize(AddText(titleRt, "Авторы", 46, TitleCol, TextAlignmentOptions.Center), "menu.credits");
 
             // Scroll view for future expansion
             var scrollGo = DefaultControls.CreateScrollView(_uiRes);
@@ -854,7 +854,7 @@ namespace ForgeGame.EditorTools
             var foot = NewRect("Footer", window);
             Anchor(foot, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                 new Vector2(0, 44), new Vector2(300, 58));
-            backButton = BuildMenuButton(foot, "Назад", 300, 58);
+            backButton = BuildMenuButton(foot, "Назад", 300, 58, out var lCredBack); Localize(lCredBack, "common.back");
 
             return panel;
         }
@@ -926,7 +926,7 @@ namespace ForgeGame.EditorTools
             var txtRt = NewRect("Label", blocker);
             Anchor(txtRt, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                 new Vector2(0, -260), new Vector2(600, 60));
-            AddText(txtRt, "Загрузка…", 34, TextLight, TextAlignmentOptions.Center);
+            Localize(AddText(txtRt, "Загрузка…", 34, TextLight, TextAlignmentOptions.Center), "common.loading");
             return blocker;
         }
 
@@ -1048,6 +1048,13 @@ namespace ForgeGame.EditorTools
             t.raycastTarget = false;
             t.textWrappingMode = TextWrappingModes.NoWrap;
             return t;
+        }
+
+        /// <summary>Attach a LocalizedText so this label follows the active language by key.</summary>
+        private static void Localize(TMP_Text t, string key)
+        {
+            if (t == null) return;
+            t.gameObject.AddComponent<LocalizedText>().SetKey(key);
         }
 
         private static void AddFrame(RectTransform target)
