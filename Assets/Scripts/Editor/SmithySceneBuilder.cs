@@ -196,11 +196,11 @@ namespace ForgeGame.EditorTools
             _fFg = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.Foreground);
             _uiCrucible = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.Crucible);
             _uiCrucibleMolten = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.CrucibleMolten);
-            _uiMoldClosed = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.SwordMoldClosed);
-            _uiMoldMask = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.MoldFillMask);
+            _uiMoldClosed = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.MoldPath(FoundryArtGenerator.WpShape.Sword));
+            _uiMoldMask = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.MoldMaskPath(FoundryArtGenerator.WpShape.Sword));
             _uiMoldFill = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.MoldFill);
             _uiStream = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.BronzeStream);
-            _uiCastBlade = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.CastBladeRaw);
+            _uiCastBlade = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.CastPath(FoundryArtGenerator.WpShape.Sword));
             _uiHammer = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.Hammer);
             _uiSparks = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.Sparks);
             _uiCastTexture = AssetDatabase.LoadAssetAtPath<Texture>(FoundryArtGenerator.CastBladeTexture);

@@ -402,7 +402,7 @@ namespace ForgeGame.EditorTools
 
             // ---- Mould below (appears when pouring) ----
             var mouldO = NewChild(foundryG, "Mould", new Vector2(0, -320), new Vector2(360, 560));
-            AddUiSprite(mouldO, "MoldClosed", new Vector2(0, 0), new Vector2(300, 540), _uiMoldClosed, Color.white);
+            var moldClosed = AddUiSprite(mouldO, "MoldClosed", new Vector2(0, 0), new Vector2(300, 540), _uiMoldClosed, Color.white);
             AddUiSprite(mouldO, "Inlet", new Vector2(0, 250), new Vector2(90, 30), _white, new Color(1f, 0.8f, 0.4f, 0.18f));
             var maskRt = NewChild(mouldO, "MoldMask", new Vector2(0, 0), new Vector2(220, 500));
             var maskImg = maskRt.gameObject.AddComponent<Image>();
@@ -413,7 +413,10 @@ namespace ForgeGame.EditorTools
             fillRt.anchoredPosition = Vector2.zero; fillRt.sizeDelta = Vector2.zero;
             var fillImg = fillRt.gameObject.AddComponent<Image>();
             fillImg.sprite = _uiMoldFill != null ? _uiMoldFill : _white; fillImg.color = new Color(1f, 0.6f, 0.2f, 1f); fillImg.raycastTarget = false;
-            var castBlade = AddUiSprite(mouldO, "CastBlade", new Vector2(40, 0), new Vector2(560, 190), _uiCastBlade, Color.white);
+            // The extracted blank — vertical (same orientation as the mould cavity), aspect-fit
+            // so hammers/pitchforks read correctly, not just swords.
+            var castBlade = AddUiSprite(mouldO, "CastBlade", new Vector2(0, 10), new Vector2(240, 500), _uiCastBlade, Color.white);
+            castBlade.preserveAspect = true;
 
             // ---- Fire under the crucible (behind it) — burns while melting ----
             var fire = AddUiSprite(foundryG, "Fire", new Vector2(0, 55), new Vector2(300, 330), _uiFire, Color.white);
@@ -451,9 +454,30 @@ namespace ForgeGame.EditorTools
             var start = AddButton(w, "Начать плавку (3 бронзы)", 0, -430, 520, 74); // hidden; kept for wiring
             var back = AddButton(w, "Назад", 780, -430, 200, 64); LocalizeBtn(back, "common.back");
 
+            // Parallel per-weapon mould art, ordered like the recipe cards.
+            var moldIds = new string[recipes.Length];
+            var moldBlocks = new Sprite[recipes.Length];
+            var moldMasks = new Sprite[recipes.Length];
+            var castBlanks = new Sprite[recipes.Length];
+            for (int i = 0; i < recipes.Length; i++)
+            {
+                var shape = FoundryArtGenerator.ShapeForBlueprint(recipes[i].id);
+                moldIds[i] = recipes[i].id;
+                moldBlocks[i] = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.MoldPath(shape));
+                moldMasks[i] = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.MoldMaskPath(shape));
+                castBlanks[i] = AssetDatabase.LoadAssetAtPath<Sprite>(FoundryArtGenerator.CastPath(shape));
+            }
+
             WireComponent(p, so =>
             {
                 SetRef(so, "recipeGroup", recipeG.gameObject);
+                SetRef(so, "moldClosedImage", moldClosed);
+                SetRef(so, "moldMaskImage", maskImg);
+                SetRef(so, "castBladeImage", castBlade);
+                SetStrArray(so, "moldBlueprintIds", moldIds);
+                SetObjArray(so, "moldBlockSprites", moldBlocks);
+                SetObjArray(so, "moldMaskSprites", moldMasks);
+                SetObjArray(so, "castBlankSprites", castBlanks);
                 SetRef(so, "materialsGroup", materialsG.gameObject);
                 SetRef(so, "bronzeCard", bronzeCard);
                 SetRef(so, "foundryGroup", foundryG.gameObject);
@@ -1245,6 +1269,22 @@ namespace ForgeGame.EditorTools
 
         private static void SetFloat(SerializedObject so, string prop, float v) { var p = so.FindProperty(prop); if (p != null) p.floatValue = v; }
         private static void SetString(SerializedObject so, string prop, string v) { var p = so.FindProperty(prop); if (p != null) p.stringValue = v; }
+
+        private static void SetStrArray(SerializedObject so, string prop, string[] vals)
+        {
+            var p = so.FindProperty(prop);
+            if (p == null) { Debug.LogWarning($"[SmithySceneBuilder] Missing array '{prop}' on {so.targetObject.GetType().Name}"); return; }
+            p.arraySize = vals.Length;
+            for (int i = 0; i < vals.Length; i++) p.GetArrayElementAtIndex(i).stringValue = vals[i];
+        }
+
+        private static void SetObjArray(SerializedObject so, string prop, UnityEngine.Object[] vals)
+        {
+            var p = so.FindProperty(prop);
+            if (p == null) { Debug.LogWarning($"[SmithySceneBuilder] Missing array '{prop}' on {so.targetObject.GetType().Name}"); return; }
+            p.arraySize = vals.Length;
+            for (int i = 0; i < vals.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = vals[i];
+        }
         private static void SetBool(SerializedObject so, string prop, bool v) { var p = so.FindProperty(prop); if (p != null) p.boolValue = v; }
         private static void SetEnum(SerializedObject so, string prop, int v) { var p = so.FindProperty(prop); if (p != null) p.enumValueIndex = v; }
 

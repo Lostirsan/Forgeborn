@@ -81,6 +81,15 @@ namespace ForgeGame.UI.Smithy
         [SerializeField] private GameObject castBladeObject;
         [SerializeField] private Button extractButton;
 
+        [Header("Per-weapon mould art (parallel arrays, indexed by blueprint id)")]
+        [SerializeField] private string[] moldBlueprintIds;
+        [SerializeField] private Sprite[] moldBlockSprites;   // engraved stone block
+        [SerializeField] private Sprite[] moldMaskSprites;    // silhouette the fill clips to
+        [SerializeField] private Sprite[] castBlankSprites;   // extracted bronze blank
+        [SerializeField] private Image moldClosedImage;
+        [SerializeField] private Image moldMaskImage;
+        [SerializeField] private Image castBladeImage;
+
         [SerializeField] private Button backButton;
 
         private bool _open;
@@ -113,7 +122,23 @@ namespace ForgeGame.UI.Smithy
         public void SelectRecipe(string blueprintId)
         {
             _selectedBlueprintId = blueprintId;
+            ApplyMoldArt(blueprintId);
             ApplyPhase();
+        }
+
+        // Swap the mould block, fill silhouette and cast blank to the chosen weapon so the
+        // whole casting reads as that weapon — not always a sword.
+        private void ApplyMoldArt(string blueprintId)
+        {
+            if (string.IsNullOrEmpty(blueprintId) || moldBlueprintIds == null || moldBlueprintIds.Length == 0) return;
+            int idx = System.Array.IndexOf(moldBlueprintIds, blueprintId);
+            if (idx < 0) idx = 0;
+            if (moldClosedImage != null && moldBlockSprites != null && idx < moldBlockSprites.Length && moldBlockSprites[idx] != null)
+                moldClosedImage.sprite = moldBlockSprites[idx];
+            if (moldMaskImage != null && moldMaskSprites != null && idx < moldMaskSprites.Length && moldMaskSprites[idx] != null)
+                moldMaskImage.sprite = moldMaskSprites[idx];
+            if (castBladeImage != null && castBlankSprites != null && idx < castBlankSprites.Length && castBlankSprites[idx] != null)
+                castBladeImage.sprite = castBlankSprites[idx];
         }
 
         protected override void OnClosed()
@@ -454,6 +479,10 @@ namespace ForgeGame.UI.Smithy
         private void ApplyPhase()
         {
             var stage = Session != null ? Session.currentStage : ForgeStage.None;
+            // Keep the mould/blank matched to the chosen (or in-progress) weapon.
+            string effectiveId = Session != null && !string.IsNullOrEmpty(Session.blueprintId)
+                ? Session.blueprintId : _selectedBlueprintId;
+            ApplyMoldArt(effectiveId);
             bool selecting = Session == null || stage == ForgeStage.None;
             bool crafting = stage == ForgeStage.Melting || stage == ForgeStage.Pouring ||
                             stage == ForgeStage.Cooling || stage == ForgeStage.CastBlankReady;

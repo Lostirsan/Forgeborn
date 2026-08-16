@@ -64,6 +64,37 @@ namespace ForgeGame.EditorTools
         public const string MeltGauge = Dir + "/Foundry_MeltGauge.png";   // semicircular melt gauge (LOW→good→overheat)
         public const string GaugeNeedle = Dir + "/Foundry_GaugeNeedle.png";
 
+        // ---- Per-weapon casting art -------------------------------------------------
+        // Each recipe now casts its OWN shape: a mould block with that weapon's cavity,
+        // a white silhouette mask (the fill clips to it while pouring) and the raw bronze
+        // blank that is extracted. All drawn from one silhouette routine so a sickle mould
+        // fills with a sickle and a sickle blank comes out — not always a sword.
+        public enum WpShape { Sword, Knife, Sickle, Hammer, Scythe, Pitchfork }
+        private static readonly WpShape[] AllShapes =
+            { WpShape.Sword, WpShape.Knife, WpShape.Sickle, WpShape.Hammer, WpShape.Scythe, WpShape.Pitchfork };
+
+        public static string MoldPath(WpShape s) => $"{Dir}/Mold_{s}.png";
+        public static string MoldMaskPath(WpShape s) => $"{Dir}/MoldMask_{s}.png";
+        public static string CastPath(WpShape s) => $"{Dir}/Cast_{s}.png";
+        public static string IconPath(WpShape s) => s switch
+        {
+            WpShape.Knife => WpKnife,
+            WpShape.Sickle => WpSickle,
+            WpShape.Hammer => WpHammer,
+            WpShape.Scythe => WpScythe,
+            WpShape.Pitchfork => WpPitchfork,
+            _ => WpSword,
+        };
+        public static WpShape ShapeForBlueprint(string id) => id switch
+        {
+            "bronze_knife" => WpShape.Knife,
+            "bronze_sickle" => WpShape.Sickle,
+            "bronze_hammer" => WpShape.Hammer,
+            "bronze_scythe" => WpShape.Scythe,
+            "bronze_pitchfork" => WpShape.Pitchfork,
+            _ => WpShape.Sword,
+        };
+
         private static readonly Color BronzeLo = new Color(0.42f, 0.26f, 0.12f);
         private static readonly Color BronzeMid = new Color(0.72f, 0.48f, 0.24f);
         private static readonly Color BronzeHi = new Color(0.92f, 0.72f, 0.42f);
@@ -76,8 +107,11 @@ namespace ForgeGame.EditorTools
         public static void GenerateMenu()
         {
             GenerateAll(true);
-            EditorUtility.DisplayDialog("Forge Game", "Арт плавильни сгенерирован в " + Dir, "OK");
+            Debug.Log("[FoundryArtGenerator] Арт плавильни сгенерирован в " + Dir);
         }
+
+        /// <summary>Force-regenerate every sprite without any modal dialog (MCP-safe).</summary>
+        public static void ForceAll() => GenerateAll(true);
 
         public static void EnsureAll() => GenerateAll(false);
 
@@ -119,12 +153,19 @@ namespace ForgeGame.EditorTools
             Make(force, PourCrucibleFwd, MakePourCrucibleForward);
             Make(force, Fire, MakeFire);
             Make(force, Log, MakeLog);
-            Make(force, WpSword, MakeWpSword);
-            Make(force, WpSickle, MakeWpSickle);
-            Make(force, WpHammer, MakeWpHammer);
-            Make(force, WpScythe, MakeWpScythe);
-            Make(force, WpKnife, MakeWpKnife);
-            Make(force, WpPitchfork, MakeWpPitchfork);
+            Make(force, WpSword, () => MakeWeaponIcon(WpShape.Sword, WpSword, 0.17f));
+            Make(force, WpKnife, () => MakeWeaponIcon(WpShape.Knife, WpKnife, 0.34f));
+            Make(force, WpSickle, () => MakeWeaponIcon(WpShape.Sickle, WpSickle, 0.42f));
+            Make(force, WpHammer, () => MakeWeaponIcon(WpShape.Hammer, WpHammer, 0.72f));
+            Make(force, WpScythe, () => MakeWeaponIcon(WpShape.Scythe, WpScythe, 0.80f));
+            Make(force, WpPitchfork, () => MakeWeaponIcon(WpShape.Pitchfork, WpPitchfork, 0.54f));
+            foreach (var s in AllShapes)
+            {
+                var shape = s; // capture per iteration
+                Make(force, MoldPath(shape), () => MakeMoldBlock(shape));
+                Make(force, MoldMaskPath(shape), () => MakeMoldMask(shape));
+                Make(force, CastPath(shape), () => MakeCast(shape));
+            }
             Make(force, WorkbenchPanel, MakeWorkbenchPanel);
             Make(force, Tang, MakeTang);
             Make(force, MeltGauge, MakeMeltGauge);
@@ -647,70 +688,160 @@ namespace ForgeGame.EditorTools
             }
         }
 
-        private static void MakeWpSword()
-        {
-            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
-            c.Disc((int)(w * 0.5f), (int)(h * 0.10f), 7, WMetalDark);                       // pommel
-            c.VGrad((int)(w * 0.45f), (int)(h * 0.12f), (int)(w * 0.55f), (int)(h * 0.30f), WWood, WWoodHi); // grip
-            c.Rect((int)(w * 0.32f), (int)(h * 0.29f), (int)(w * 0.68f), (int)(h * 0.35f), WMetalDark); // guard
-            c.Tri(w / 2, (int)(h * 0.96f), (int)(w * 0.10f), (int)(h * 0.62f), WMetal);      // blade
-            c.Rect(w / 2 - 2, (int)(h * 0.36f), w / 2 + 2, (int)(h * 0.90f), WMetalHi);      // fuller highlight
-            c.Save(WpSword, 100f);
-        }
+        // ---- Weapon silhouette (shared by mould/mask/cast/icon) ---------------------
 
-        private static void MakeWpKnife()
+        // Draws one weapon standing vertically (handle at the bottom, working end up),
+        // centred on cx and spanning y0..y1. `u` is the base half-width unit. When shaded,
+        // a lighter sheen (hi) is laid over the blade/head so it reads with metal volume.
+        private static void DrawWeaponVertical(PixelCanvas c, WpShape shape, int cx, int y0, int y1, int u, Color body, Color hi, bool shaded)
         {
-            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
-            c.VGrad((int)(w * 0.42f), (int)(h * 0.08f), (int)(w * 0.58f), (int)(h * 0.40f), WWood, WWoodHi); // handle
-            c.Rect((int)(w * 0.40f), (int)(h * 0.40f), (int)(w * 0.60f), (int)(h * 0.44f), WMetalDark);      // bolster
-            c.Tri((int)(w * 0.54f), (int)(h * 0.94f), (int)(w * 0.11f), (int)(h * 0.50f), WMetal);           // blade
-            c.Rect((int)(w * 0.45f), (int)(h * 0.46f), (int)(w * 0.49f), (int)(h * 0.9f), WMetalHi);          // edge highlight
-            c.Save(WpKnife, 100f);
-        }
-
-        private static void MakeWpHammer()
-        {
-            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
-            c.VGrad((int)(w * 0.46f), (int)(h * 0.06f), (int)(w * 0.54f), (int)(h * 0.74f), WWood, WWoodHi);  // shaft
-            c.VGrad((int)(w * 0.26f), (int)(h * 0.66f), (int)(w * 0.74f), (int)(h * 0.90f), WMetalDark, WMetal); // head
-            c.Rect((int)(w * 0.26f), (int)(h * 0.66f), (int)(w * 0.31f), (int)(h * 0.90f), WMetalDark);        // left band
-            c.Rect((int)(w * 0.69f), (int)(h * 0.66f), (int)(w * 0.74f), (int)(h * 0.90f), WMetalDark);        // right band
-            c.Rect((int)(w * 0.30f), (int)(h * 0.86f), (int)(w * 0.70f), (int)(h * 0.89f), WMetalHi);          // top glint
-            c.Save(WpHammer, 100f);
-        }
-
-        private static void MakeWpSickle()
-        {
-            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
-            c.VGrad((int)(w * 0.40f), (int)(h * 0.06f), (int)(w * 0.56f), (int)(h * 0.36f), WWood, WWoodHi);  // handle
-            Arc(c, w * 0.40f, h * 0.40f, w * 0.34f, -25f, 165f, 5, WMetal);                                  // crescent blade
-            Arc(c, w * 0.40f, h * 0.40f, w * 0.30f, -20f, 160f, 2, WMetalHi);                                // inner edge
-            c.Save(WpSickle, 100f);
-        }
-
-        private static void MakeWpScythe()
-        {
-            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
-            c.VGrad((int)(w * 0.47f), (int)(h * 0.06f), (int)(w * 0.53f), (int)(h * 0.82f), WWood, WWoodHi);  // long snath
-            c.Rect((int)(w * 0.40f), (int)(h * 0.44f), (int)(w * 0.52f), (int)(h * 0.50f), WWoodHi);          // hand grip nib
-            Arc(c, w * 0.50f, h * 0.74f, w * 0.34f, 90f, 205f, 5, WMetal);                                   // curved blade
-            Arc(c, w * 0.50f, h * 0.74f, w * 0.30f, 95f, 200f, 2, WMetalHi);
-            c.Save(WpScythe, 100f);
-        }
-
-        private static void MakeWpPitchfork()
-        {
-            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
-            c.VGrad((int)(w * 0.47f), (int)(h * 0.05f), (int)(w * 0.53f), (int)(h * 0.58f), WWood, WWoodHi);  // handle
-            c.Rect((int)(w * 0.28f), (int)(h * 0.56f), (int)(w * 0.72f), (int)(h * 0.62f), WMetalDark);        // crossbar
-            float[] px = { 0.32f, 0.50f, 0.68f };
-            foreach (var fx in px)
+            int H = y1 - y0;
+            switch (shape)
             {
-                int x = (int)(w * fx);
-                c.Rect(x - 3, (int)(h * 0.60f), x + 3, (int)(h * 0.86f), WMetal);          // prong
-                c.Tri(x, (int)(h * 0.94f), 3, (int)(h * 0.10f), WMetalHi);                 // pointed tip
+                case WpShape.Sword:
+                {
+                    int gripTop = y0 + (int)(H * 0.16f);
+                    c.Disc(cx, y0 + (int)(H * 0.03f), (int)(u * 0.95f), body);                         // pommel
+                    c.Rect(cx - (int)(u * 0.6f), y0, cx + (int)(u * 0.6f), gripTop, body);              // grip
+                    int guardTop = gripTop + (int)(H * 0.05f);
+                    c.Rect(cx - (int)(u * 2.4f), gripTop, cx + (int)(u * 2.4f), guardTop, body);        // guard
+                    int span = y1 - guardTop;
+                    for (int y = guardTop; y < y1; y++)
+                    {
+                        float t = (float)(y - guardTop) / span;
+                        int half = (int)(u * 2f * (t < 0.8f ? 1f : Mathf.Lerp(1f, 0f, (t - 0.8f) / 0.2f)));
+                        c.Row(cx - half, cx + half, y, body);
+                    }
+                    if (shaded) Sheen(c, cx - (int)(u * 0.35f), guardTop, cx + (int)(u * 0.35f), guardTop + (int)(span * 0.78f), hi);
+                    break;
+                }
+                case WpShape.Knife:
+                {
+                    int hTop = y0 + (int)(H * 0.34f);
+                    c.Disc(cx, y0 + (int)(u * 0.6f), (int)(u * 0.75f), body);                           // pommel cap
+                    c.Rect(cx - (int)(u * 0.75f), y0, cx + (int)(u * 0.75f), hTop, body);               // handle
+                    int bolT = hTop + (int)(H * 0.04f);
+                    c.Rect(cx - (int)(u * 1.0f), hTop, cx + (int)(u * 1.0f), bolT, body);               // bolster
+                    int span = y1 - bolT;
+                    for (int y = bolT; y < y1; y++)
+                    {
+                        float t = (float)(y - bolT) / span;
+                        int right = cx + (int)(u * 1.25f * (t < 0.82f ? 1f : Mathf.Lerp(1f, 0f, (t - 0.82f) / 0.18f)));
+                        int left = cx - (int)(u * 0.45f * (t < 0.9f ? 1f : Mathf.Lerp(1f, 0f, (t - 0.9f) / 0.1f)));
+                        c.Row(left, right, y, body);
+                    }
+                    if (shaded) Sheen(c, cx - (int)(u * 0.2f), bolT, cx + (int)(u * 0.7f), bolT + (int)(span * 0.8f), hi);
+                    break;
+                }
+                case WpShape.Hammer:
+                {
+                    int shaftTop = y0 + (int)(H * 0.72f);
+                    c.Rect(cx - (int)(u * 0.55f), y0, cx + (int)(u * 0.55f), shaftTop, body);           // shaft
+                    int headTop = y1 - (int)(H * 0.03f);
+                    c.Rect(cx - (int)(u * 2.6f), shaftTop, cx + (int)(u * 2.6f), headTop, body);        // head
+                    int hc = (shaftTop + headTop) / 2, hr = (headTop - shaftTop) / 2;
+                    c.Disc(cx - (int)(u * 2.6f), hc, hr, body); c.Disc(cx + (int)(u * 2.6f), hc, hr, body); // rounded ends
+                    if (shaded)
+                    {
+                        Sheen(c, cx - (int)(u * 2.4f), headTop - (int)(H * 0.06f), cx + (int)(u * 2.4f), headTop, hi);
+                        Sheen(c, cx - (int)(u * 0.2f), y0, cx + (int)(u * 0.2f), shaftTop, hi);
+                    }
+                    break;
+                }
+                case WpShape.Pitchfork:
+                {
+                    int shaftTop = y0 + (int)(H * 0.54f);
+                    c.Rect(cx - (int)(u * 0.5f), y0, cx + (int)(u * 0.5f), shaftTop, body);             // shaft
+                    int barTop = shaftTop + (int)(H * 0.06f);
+                    c.Rect(cx - (int)(u * 2.2f), shaftTop, cx + (int)(u * 2.2f), barTop, body);         // crossbar
+                    foreach (var fx in new[] { -1.7f, 0f, 1.7f })
+                    {
+                        int x = cx + (int)(u * fx);
+                        int tipY = y1 - (int)(H * 0.03f);
+                        c.Rect(x - (int)(u * 0.35f), barTop, x + (int)(u * 0.35f), tipY - (int)(H * 0.07f), body);
+                        c.Tri(x, tipY, (int)(u * 0.35f), (int)(H * 0.09f), body);                        // pointed tip
+                    }
+                    if (shaded) Sheen(c, cx - (int)(u * 0.15f), y0, cx + (int)(u * 0.15f), shaftTop, hi);
+                    break;
+                }
+                case WpShape.Sickle:
+                {
+                    int hTop = y0 + (int)(H * 0.42f);
+                    c.Rect(cx - (int)(u * 0.7f), y0, cx + (int)(u * 0.7f), hTop, body);                 // handle
+                    int acy = hTop + (int)(H * 0.02f), R = (int)(H * 0.36f);
+                    Arc(c, cx, acy, R, 8f, 196f, (int)(u * 0.85f), body);                               // crescent blade
+                    if (shaded) Arc(c, cx, acy, R, 18f, 186f, (int)(u * 0.32f), hi);
+                    break;
+                }
+                case WpShape.Scythe:
+                {
+                    int sTop = y0 + (int)(H * 0.80f);
+                    c.Rect(cx - (int)(u * 0.5f), y0, cx + (int)(u * 0.5f), sTop, body);                 // snath
+                    int acx = cx - (int)(u * 0.4f), acy = sTop - (int)(H * 0.04f), R = (int)(H * 0.42f);
+                    Arc(c, acx, acy, R, 90f, 212f, (int)(u * 0.8f), body);                              // curved blade
+                    if (shaded) Arc(c, acx, acy, R, 100f, 202f, (int)(u * 0.32f), hi);
+                    break;
+                }
             }
-            c.Save(WpPitchfork, 100f);
+        }
+
+        // Blend a colour only over pixels that already carry the silhouette (keeps a
+        // highlight inside the shape instead of spilling onto the transparent field).
+        private static void Sheen(PixelCanvas c, int x0, int y0, int x1, int y1, Color col)
+        {
+            for (int y = Mathf.Max(0, y0); y < Mathf.Min(c.h, y1); y++)
+                for (int x = Mathf.Max(0, x0); x < Mathf.Min(c.w, x1); x++)
+                    if (c.A(x, y) > 0.02f) c.Blend(x, y, col);
+        }
+
+        // Recolour the lower handle band to wood (used only by the recipe icons, where the
+        // finished weapon shows a wooden haft; the cast blank itself is raw metal).
+        private static void WoodOverlay(PixelCanvas c, int cx, int y0, int y1, Color wood, Color woodHi)
+        {
+            for (int y = Mathf.Max(0, y0); y < Mathf.Min(c.h, y1); y++)
+                for (int x = 0; x < c.w; x++)
+                    if (c.A(x, y) > 0.02f) c.Blend(x, y, wood);
+            for (int y = Mathf.Max(0, y0); y < Mathf.Min(c.h, y1); y++)
+                if (c.A(cx, y) > 0.02f) c.Blend(cx, y, woodHi);
+        }
+
+        // Recipe icon: shaded steel weapon with a wooden handle band, matching the sword.
+        private static void MakeWeaponIcon(WpShape s, string path, float handleFrac)
+        {
+            var c = new PixelCanvas(128, 128);
+            int w = c.w, h = c.h, y0 = (int)(h * 0.06f), y1 = (int)(h * 0.96f);
+            DrawWeaponVertical(c, s, w / 2, y0, y1, 9, WMetal, WMetalHi, true);
+            WoodOverlay(c, w / 2, y0 + (s == WpShape.Sword ? (int)(h * 0.04f) : 0), y0 + (int)((y1 - y0) * handleFrac), WWood, WWoodHi);
+            c.Save(path, 100f);
+        }
+
+        // Clay/stone mould block with this weapon's engraved cavity + pour funnel.
+        private static void MakeMoldBlock(WpShape s)
+        {
+            var c = new PixelCanvas(300, 620);
+            int w = c.w, h = c.h;
+            c.VGrad((int)(w * 0.1f), (int)(h * 0.05f), (int)(w * 0.9f), (int)(h * 0.98f), new Color(0.22f, 0.19f, 0.17f), new Color(0.30f, 0.26f, 0.23f));
+            c.Grain((int)(w * 0.1f), (int)(h * 0.05f), (int)(w * 0.9f), (int)(h * 0.98f), false, 0.06f, 23);
+            c.Rect(w / 2 - 1, (int)(h * 0.05f), w / 2 + 1, (int)(h * 0.98f), new Color(0, 0, 0, 0.3f)); // parting line
+            DrawWeaponVertical(c, s, w / 2, (int)(h * 0.10f), (int)(h * 0.90f), 28, new Color(0.06f, 0.05f, 0.05f), Color.clear, false);
+            c.Rect(w / 2 - 10, (int)(h * 0.06f), w / 2 + 10, (int)(h * 0.14f), new Color(0.06f, 0.05f, 0.05f)); // pour funnel
+            c.Save(MoldPath(s), 100f);
+        }
+
+        // Pure-white weapon silhouette used as the UI Mask the molten fill clips to.
+        private static void MakeMoldMask(WpShape s)
+        {
+            var c = new PixelCanvas(220, 520);
+            DrawWeaponVertical(c, s, c.w / 2, (int)(c.h * 0.04f), (int)(c.h * 0.97f), 22, Color.white, Color.white, false);
+            c.Save(MoldMaskPath(s), 100f);
+        }
+
+        // The raw bronze blank the player extracts — same shape, cast-metal shaded.
+        private static void MakeCast(WpShape s)
+        {
+            var c = new PixelCanvas(240, 540);
+            DrawWeaponVertical(c, s, c.w / 2, (int)(c.h * 0.04f), (int)(c.h * 0.97f), 22, BronzeMid, new Color(1f, 0.92f, 0.62f, 0.5f), true);
+            c.Save(CastPath(s), 100f);
         }
 
         // Solid axis-aligned ellipse (no native primitive in PixelCanvas).

@@ -22,6 +22,14 @@ namespace ForgeGame.EditorTools
         public const string Vision = Dir + "/Dungeon_Vision.png";        // darkness mask, transparent centre (torch)
         public const string Torch = Dir + "/Dungeon_Torch.png";         // flame in the hand
         public const string TorchGlow = Dir + "/Dungeon_TorchGlow.png"; // warm light around the torch
+        public const string Ore = Dir + "/Dungeon_Ore.png";             // ore chunk lying on the floor
+
+        // ---- Side-view (diorama) dungeon ----
+        public const string SideWall = Dir + "/Dungeon_SideWall.png";       // cave back wall (tiles horizontally)
+        public const string SideFloor = Dir + "/Dungeon_SideFloor.png";     // ground strip (tiles horizontally)
+        public const string SideCeiling = Dir + "/Dungeon_SideCeiling.png"; // dark ceiling + stalactites (tiles horizontally)
+        public const string SideHeroA = Dir + "/Dungeon_SideHeroA.png";     // torch-bearing leader, facing right
+        public const string SideHeroB = Dir + "/Dungeon_SideHeroB.png";     // hooded companion, facing right
 
         [MenuItem("Tools/Forge Game/Generate Dungeon Art")]
         public static void GenerateMenu() { GenerateAll(true); EditorUtility.DisplayDialog("Forge Game", "Арт подземелья сгенерирован в " + Dir, "OK"); }
@@ -41,7 +49,14 @@ namespace ForgeGame.EditorTools
             Make(force, TorchGlow, MakeTorchGlow, 100f);
             Make(force, Floor2, MakeFloor2, 128f);
             Make(force, WallStone, MakeWall, 128f);
+            Make(force, Ore, MakeOre, 96f);
+            Make(force, SideWall, MakeSideWall, 128f);
+            Make(force, SideFloor, MakeSideFloor, 128f);
+            Make(force, SideCeiling, MakeSideCeiling, 128f);
+            Make(force, SideHeroA, MakeSideHeroA, 128f);
+            Make(force, SideHeroB, MakeSideHeroB, 128f);
             SetFullRect(Floor2); // floor is tiled at runtime → needs a full-rect sprite mesh
+            SetFullRect(SideWall); SetFullRect(SideFloor); SetFullRect(SideCeiling);
         }
 
         // ---- Hero, back view ----
@@ -283,6 +298,126 @@ namespace ForgeGame.EditorTools
             }
             c.Grain(0, 0, w, h, true, 0.08f, 5);
             c.Save(WallStone, 128f);
+        }
+
+        // ---- Ore chunk lying on the floor (rock with metallic bits) ----
+        private static void MakeOre()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            var rock = new Color(0.34f, 0.30f, 0.28f);
+            var rockD = new Color(0.19f, 0.16f, 0.15f);
+            var rockH = new Color(0.52f, 0.47f, 0.43f);
+            var metal = new Color(0.80f, 0.52f, 0.30f);   // iron-ore glint
+            var metalH = new Color(1f, 0.82f, 0.5f);
+            c.Disc(w / 2 + 4, h / 2 - 5, (int)(w * 0.36f), rockD);            // shadow
+            c.Disc((int)(w * 0.42f), (int)(h * 0.44f), (int)(w * 0.30f), rock);
+            c.Disc((int)(w * 0.60f), (int)(h * 0.56f), (int)(w * 0.26f), rock);
+            c.Radial((int)(w * 0.40f), (int)(h * 0.60f), w * 0.30f, new Color(rockH.r, rockH.g, rockH.b, 0.7f), 1.7f);
+            int[,] sp = { { 34, 40 }, { 56, 52 }, { 44, 58 }, { 62, 36 }, { 30, 54 }, { 50, 44 } };
+            for (int i = 0; i < sp.GetLength(0); i++)
+            {
+                c.Disc(sp[i, 0], sp[i, 1], 4, metal);
+                c.Disc(sp[i, 0] - 1, sp[i, 1] + 1, 2, metalH);
+            }
+            c.Save(Ore, 96f);
+        }
+
+        // ---- Side-view cave (tiles horizontally) ----
+        private static readonly Color CaveDark = new Color(0.11f, 0.09f, 0.13f);
+        private static readonly Color CaveMid = new Color(0.22f, 0.18f, 0.24f);
+        private static readonly Color CaveHi = new Color(0.36f, 0.30f, 0.42f);
+
+        private static void MakeSideWall()
+        {
+            var c = new PixelCanvas(256, 256); int w = c.w, h = c.h;
+            c.VGrad(0, 0, w, h, CaveDark, CaveMid);
+            // vertical crevices at the tile seams (x=0 and x=128) so it tiles horizontally
+            for (int bx = 0; bx <= 128; bx += 128) c.Line(bx, 0, bx + 10, h, 2, new Color(0.06f, 0.05f, 0.07f, 0.7f));
+            int[,] pts = { { 40, 190 }, { 96, 150 }, { 160, 200 }, { 210, 150 }, { 60, 90 }, { 130, 70 }, { 200, 90 }, { 90, 220 } };
+            for (int i = 0; i < pts.GetLength(0); i++)
+            {
+                int x = pts[i, 0], y = pts[i, 1], r = 20 + (i % 3) * 6;
+                c.Disc(x + 5, y - 6, r, new Color(0.06f, 0.05f, 0.06f));
+                c.Disc(x, y, r, CaveMid);
+                c.Radial(x - 6, y + 6, r * 0.85f, new Color(CaveHi.r, CaveHi.g, CaveHi.b, 0.55f), 1.7f);
+            }
+            c.Grain(0, 0, w, h, false, 0.07f, 5);
+            c.Save(SideWall, 128f);
+        }
+
+        private static void MakeSideFloor()
+        {
+            var c = new PixelCanvas(256, 128); int w = c.w, h = c.h;
+            var fDark = new Color(0.13f, 0.11f, 0.13f);
+            var fMid = new Color(0.22f, 0.19f, 0.21f);
+            var fHi = new Color(0.31f, 0.27f, 0.28f);
+            c.VGrad(0, 0, w, (int)(h * 0.78f), fDark, fMid);
+            c.Rect(0, (int)(h * 0.78f), w, h, fHi);                                  // walkable top band
+            c.Rect(0, (int)(h * 0.74f), w, (int)(h * 0.78f), new Color(0, 0, 0, 0.4f)); // shadow line
+            c.Grain(0, 0, w, (int)(h * 0.78f), false, 0.10f, 13);
+            for (int i = 0; i < 10; i++) c.Disc((i * 151) % w, (i * 37) % (int)(h * 0.7f), 4 + i % 3, new Color(0.18f, 0.16f, 0.17f));
+            c.Save(SideFloor, 128f);
+        }
+
+        private static void MakeSideCeiling()
+        {
+            var c = new PixelCanvas(256, 128); int w = c.w, h = c.h;
+            c.Rect(0, 0, w, h, CaveDark);
+            c.VGrad(0, (int)(h * 0.55f), w, h, CaveDark, CaveMid); // rock toward the top
+            Stalactite(c, 46, h - 1, 74, 15, CaveMid);
+            Stalactite(c, 120, h - 1, 52, 11, CaveMid);
+            Stalactite(c, 200, h - 1, 92, 17, CaveMid);
+            c.Grain(0, 0, w, h, false, 0.06f, 9);
+            c.Save(SideCeiling, 128f);
+        }
+
+        private static void Stalactite(PixelCanvas c, int cx, int baseY, int len, int halfW, Color col)
+        {
+            for (int i = 0; i < len; i++)
+            {
+                float t = i / (float)len;
+                int hb = (int)(halfW * (1f - t));
+                c.Row(cx - hb, cx + hb, baseY - i, col);
+            }
+        }
+
+        // ---- Side-view heroes (facing right) ----
+        private static void MakeSideHeroA()
+        {
+            var c = new PixelCanvas(120, 190); int w = c.w, h = c.h;
+            var steel = new Color(0.55f, 0.58f, 0.64f);
+            var steelHi = new Color(0.78f, 0.81f, 0.88f);
+            var cloak = new Color(0.44f, 0.16f, 0.15f);
+            var leather = new Color(0.32f, 0.22f, 0.13f);
+            var skin = new Color(0.82f, 0.64f, 0.48f);
+            var wood = new Color(0.34f, 0.22f, 0.11f);
+            c.Rect((int)(w * 0.24f), (int)(h * 0.10f), (int)(w * 0.50f), (int)(h * 0.60f), cloak);          // cloak behind
+            c.Rect((int)(w * 0.42f), 0, (int)(w * 0.52f), (int)(h * 0.30f), leather);                       // back leg
+            c.Rect((int)(w * 0.55f), 0, (int)(w * 0.65f), (int)(h * 0.27f), leather);                       // front leg (stride)
+            c.Rect((int)(w * 0.40f), (int)(h * 0.27f), (int)(w * 0.66f), (int)(h * 0.58f), steel);          // torso
+            c.Rect((int)(w * 0.40f), (int)(h * 0.52f), (int)(w * 0.66f), (int)(h * 0.58f), steelHi);        // shoulder glint
+            c.Disc((int)(w * 0.52f), (int)(h * 0.70f), (int)(w * 0.14f), steel);                            // helmet
+            c.Disc((int)(w * 0.65f), (int)(h * 0.68f), (int)(w * 0.05f), skin);                             // face (right)
+            c.Line((int)(w * 0.60f), (int)(h * 0.52f), (int)(w * 0.80f), (int)(h * 0.74f), 5, steel);       // arm raised
+            c.Rect((int)(w * 0.78f), (int)(h * 0.70f), (int)(w * 0.86f), (int)(h * 0.98f), wood);           // torch shaft
+            c.Save(SideHeroA, 128f);
+        }
+
+        private static void MakeSideHeroB()
+        {
+            var c = new PixelCanvas(104, 168); int w = c.w, h = c.h;
+            var hood = new Color(0.20f, 0.25f, 0.27f);
+            var hoodHi = new Color(0.30f, 0.36f, 0.38f);
+            var leather = new Color(0.28f, 0.22f, 0.15f);
+            var skin = new Color(0.80f, 0.62f, 0.46f);
+            c.Rect((int)(w * 0.42f), 0, (int)(w * 0.52f), (int)(h * 0.32f), leather);                       // back leg
+            c.Rect((int)(w * 0.54f), 0, (int)(w * 0.63f), (int)(h * 0.30f), leather);                       // front leg
+            c.Rect((int)(w * 0.32f), (int)(h * 0.10f), (int)(w * 0.66f), (int)(h * 0.64f), hood);           // cloak
+            c.Rect((int)(w * 0.34f), (int)(h * 0.55f), (int)(w * 0.64f), (int)(h * 0.62f), hoodHi);         // shoulder line
+            c.Disc((int)(w * 0.50f), (int)(h * 0.72f), (int)(w * 0.16f), hood);                             // hood
+            c.Tri((int)(w * 0.50f), (int)(h * 0.94f), (int)(w * 0.14f), (int)(h * 0.28f), hood);            // hood peak
+            c.Disc((int)(w * 0.63f), (int)(h * 0.70f), (int)(w * 0.045f), skin);                            // face (right)
+            c.Save(SideHeroB, 128f);
         }
 
         private static void SetFullRect(string path)
