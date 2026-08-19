@@ -318,6 +318,274 @@ MonoBehaviour:
     m_Localized: Refractory, reliable
     m_Metadata:
       m_Items: []
+  - m_Id: 2149327278432256
+    m_Localized: 'Depth: {0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763904
+    m_Localized: "I \u2014 close"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763905
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763906
+    m_Localized: Exit to menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763907
+    m_Localized: 'Turn: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763908
+    m_Localized: Enemies emerge from the dark!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763909
+    m_Localized: Victory!  +{0} ore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763910
+    m_Localized: "The party has fallen\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763911
+    m_Localized: '{0} is stunned and skips a turn.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763912
+    m_Localized: "{0} hits {1}: \u2212{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763913
+    m_Localized: ' (guarded)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763914
+    m_Localized: "{0}: {1} on {2} \u2212{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763915
+    m_Localized: ' (stun)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763916
+    m_Localized: '{0} heals {1}: +{2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763917
+    m_Localized: '{0} braces.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763918
+    m_Localized: Rat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763919
+    m_Localized: Goblin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763920
+    m_Localized: Brute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763921
+    m_Localized: Knight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763922
+    m_Localized: Companion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763923
+    m_Localized: Strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763924
+    m_Localized: Break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763925
+    m_Localized: Guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763926
+    m_Localized: Lunge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763927
+    m_Localized: Bandage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128684449792
+    m_Localized: To the dungeon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752960
+    m_Localized: Outfit the party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752961
+    m_Localized: Who to take and how to arm them
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752962
+    m_Localized: Descend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752963
+    m_Localized: Take along
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752964
+    m_Localized: Leads the party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752965
+    m_Localized: 'Weapon:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752966
+    m_Localized: Fists
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128759947264
+    m_Localized: +{0} dmg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2271787219087360
+    m_Localized: Return to smithy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475067502592
+    m_Localized: Main menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388672
+    m_Localized: Saves
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388673
+    m_Localized: "Saves\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388674
+    m_Localized: Quick save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388675
+    m_Localized: "Save name\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388676
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388677
+    m_Localized: Load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388678
+    m_Localized: Delete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2276290123198464
+    m_Localized: Load game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2276290177724416
+    m_Localized: Load game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646314749952
+    m_Localized: Available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646365081600
+    m_Localized: In the party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646365081601
+    m_Localized: "\u2014 none \u2014"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651513032704
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392832
+    m_Localized: Party equipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392833
+    m_Localized: Equip each hero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392834
+    m_Localized: Party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392835
+    m_Localized: Gear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392836
+    m_Localized: Inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392837
+    m_Localized: Weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392838
+    m_Localized: Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392839
+    m_Localized: Trinket
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392840
+    m_Localized: Soon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392841
+    m_Localized: No forged weapons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374575472640
+    m_Localized: Helmet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027072
+    m_Localized: Chestplate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027073
+    m_Localized: Legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027074
+    m_Localized: Boots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027075
+    m_Localized: Two-handed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027076
+    m_Localized: Necklace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2339645487771648
+    m_Localized: Left hand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2339645554880512
+    m_Localized: Right hand
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -12,7 +12,10 @@ namespace ForgeGame.Smithy
         ItemResult = 6,
         Pause = 7,
         Settings = 8,
-        Debug = 9
+        Debug = 9,
+        DungeonPrep = 10,
+        SaveSlots = 11,
+        DungeonEquip = 12
     }
 
     /// <summary>

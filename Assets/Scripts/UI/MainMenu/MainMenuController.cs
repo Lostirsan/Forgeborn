@@ -1,4 +1,5 @@
 using ForgeGame.Audio;
+using ForgeGame.Localization;
 using ForgeGame.Save;
 using ForgeGame.UI.Common;
 using TMPro;
@@ -26,10 +27,19 @@ namespace ForgeGame.UI.MainMenu
 
         [Header("Main buttons")]
         [SerializeField] private Button continueButton;
+        [SerializeField] private Button loadButton;
         [SerializeField] private Button newGameButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button creditsButton;
         [SerializeField] private Button quitButton;
+
+        [Header("Load panel (slot picker)")]
+        [SerializeField] private GameObject loadPanelRoot;
+        [SerializeField] private Button loadBackButton;
+        [SerializeField] private TMP_Text[] slotNameLabels;
+        [SerializeField] private TMP_Text[] slotDateLabels;
+        [SerializeField] private Button[] slotLoadButtons;
+        [SerializeField] private Button[] slotDeleteButtons;
 
         [Header("Panels")]
         [SerializeField] private GameObject settingsPanelRoot;
@@ -53,19 +63,31 @@ namespace ForgeGame.UI.MainMenu
 
         private bool SettingsOpen => settingsPanelRoot != null && settingsPanelRoot.activeSelf;
         private bool CreditsOpen => creditsPanelRoot != null && creditsPanelRoot.activeSelf;
+        private bool LoadOpen => loadPanelRoot != null && loadPanelRoot.activeSelf;
         private bool ModalOpen => confirmationModal != null && confirmationModal.IsOpen;
+        private int SlotCount => slotNameLabels != null ? slotNameLabels.Length : 0;
 
         private void Awake()
         {
             _saveService = new LocalSaveGameService();
 
             if (continueButton != null) continueButton.onClick.AddListener(OnContinue);
+            if (loadButton != null) loadButton.onClick.AddListener(OnLoad);
             if (newGameButton != null) newGameButton.onClick.AddListener(OnNewGame);
             if (settingsButton != null) settingsButton.onClick.AddListener(OnSettings);
             if (creditsButton != null) creditsButton.onClick.AddListener(OnCredits);
             if (quitButton != null) quitButton.onClick.AddListener(OnQuit);
             if (settingsBackButton != null) settingsBackButton.onClick.AddListener(OnSettingsBack);
             if (creditsBackButton != null) creditsBackButton.onClick.AddListener(OnCreditsBack);
+            if (loadBackButton != null) loadBackButton.onClick.AddListener(OnLoadBack);
+            for (int i = 0; i < SlotCount; i++)
+            {
+                int slot = i;
+                if (slotLoadButtons != null && i < slotLoadButtons.Length && slotLoadButtons[i] != null)
+                    slotLoadButtons[i].onClick.AddListener(() => LoadSlotAt(slot));
+                if (slotDeleteButtons != null && i < slotDeleteButtons.Length && slotDeleteButtons[i] != null)
+                    slotDeleteButtons[i].onClick.AddListener(() => DeleteSlotAt(slot));
+            }
         }
 
         private void OnDestroy()
@@ -86,12 +108,14 @@ namespace ForgeGame.UI.MainMenu
 
             if (settingsPanelRoot != null) settingsPanelRoot.SetActive(false);
             if (creditsPanelRoot != null) creditsPanelRoot.SetActive(false);
+            if (loadPanelRoot != null) loadPanelRoot.SetActive(false);
             if (loadingBlocker != null) loadingBlocker.SetActive(false);
             if (confirmationModal != null) confirmationModal.Hide();
             SetMainContentInteractable(true);
 
             bool hasSave = _saveService.HasSave;
             if (continueButton != null) continueButton.interactable = hasSave;
+            if (loadButton != null) loadButton.interactable = hasSave;
 
             fader?.FadeIn();
 
@@ -152,6 +176,77 @@ namespace ForgeGame.UI.MainMenu
             audioManager?.PlayClick();
             SetMainContentInteractable(false);
             creditsPanelRoot.SetActive(true);
+        }
+
+        public void OnLoad()
+        {
+            if (loadPanelRoot == null) return;
+            _selectionBeforeOverlay = CurrentSelection();
+            audioManager?.PlayClick();
+            SetMainContentInteractable(false);
+            loadPanelRoot.SetActive(true);
+            PopulateSlots();
+        }
+
+        public void OnLoadBack()
+        {
+            if (!LoadOpen) return;
+            loadPanelRoot.SetActive(false);
+            audioManager?.PlayClose();
+            SetMainContentInteractable(true);
+            RestoreSelection();
+        }
+
+        private void PopulateSlots()
+        {
+            if (_saveService == null) return;
+            var slots = _saveService.ListSlots();
+            int active = _saveService.ActiveSlot;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                bool used = i < slots.Count && slots[i].used;
+                var info = i < slots.Count ? slots[i] : default;
+                if (slotNameLabels[i] != null)
+                {
+                    slotNameLabels[i].text = used ? info.name : Loc.Tr("common.empty");
+                    slotNameLabels[i].color = (i == active && used)
+                        ? new Color(0.98f, 0.82f, 0.4f) : new Color(0.87f, 0.81f, 0.69f);
+                }
+                if (slotDateLabels != null && i < slotDateLabels.Length && slotDateLabels[i] != null)
+                    slotDateLabels[i].text = used ? FormatTime(info.savedAtUnix) : "";
+                if (slotLoadButtons != null && i < slotLoadButtons.Length && slotLoadButtons[i] != null)
+                    slotLoadButtons[i].interactable = used;
+                if (slotDeleteButtons != null && i < slotDeleteButtons.Length && slotDeleteButtons[i] != null)
+                    slotDeleteButtons[i].interactable = used;
+            }
+        }
+
+        private static string FormatTime(long unix)
+        {
+            if (unix <= 0) return "";
+            try { return System.DateTimeOffset.FromUnixTimeSeconds(unix).LocalDateTime.ToString("dd.MM.yyyy HH:mm"); }
+            catch { return ""; }
+        }
+
+        private void LoadSlotAt(int slot)
+        {
+            if (_isLoading) return;
+            var data = _saveService.Load(slot);
+            if (data == null) return;
+            _saveService.SetActiveSlot(slot);
+            audioManager?.PlayClick();
+            string scene = !string.IsNullOrEmpty(data.sceneName) ? data.sceneName : forgeSceneName;
+            StartSceneLoad(scene);
+        }
+
+        private void DeleteSlotAt(int slot)
+        {
+            _saveService.Delete(slot);
+            audioManager?.PlayClose();
+            PopulateSlots();
+            bool hasSave = _saveService.HasSave;
+            if (continueButton != null) continueButton.interactable = hasSave;
+            if (loadButton != null) loadButton.interactable = hasSave;
         }
 
         public void OnQuit()
@@ -262,6 +357,10 @@ namespace ForgeGame.UI.MainMenu
             else if (CreditsOpen)
             {
                 OnCreditsBack();
+            }
+            else if (LoadOpen)
+            {
+                OnLoadBack();
             }
             else
             {

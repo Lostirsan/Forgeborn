@@ -315,6 +315,274 @@ MonoBehaviour:
     m_Key: material.bronze_desc
     m_Metadata:
       m_Items: []
+  - m_Id: 2149327278432256
+    m_Key: dungeon.depth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763904
+    m_Key: dungeon.inv_close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763905
+    m_Key: pause.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763906
+    m_Key: pause.exit_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763907
+    m_Key: combat.turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763908
+    m_Key: combat.encounter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763909
+    m_Key: combat.victory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763910
+    m_Key: combat.defeat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763911
+    m_Key: combat.stunned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763912
+    m_Key: combat.log_hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763913
+    m_Key: combat.guarded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763914
+    m_Key: combat.log_ability
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763915
+    m_Key: combat.stun_suffix
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763916
+    m_Key: combat.log_heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763917
+    m_Key: combat.log_guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763918
+    m_Key: enemy.rat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763919
+    m_Key: enemy.goblin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763920
+    m_Key: enemy.brute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763921
+    m_Key: hero.knight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763922
+    m_Key: hero.companion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763923
+    m_Key: ability.strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763924
+    m_Key: ability.break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763925
+    m_Key: ability.guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763926
+    m_Key: ability.lunge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763927
+    m_Key: ability.bandage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128684449792
+    m_Key: hud.to_dungeon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752960
+    m_Key: prep.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752961
+    m_Key: prep.subtitle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752962
+    m_Key: prep.descend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752963
+    m_Key: prep.take
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752964
+    m_Key: prep.leader_locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752965
+    m_Key: prep.weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752966
+    m_Key: prep.fists
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128759947264
+    m_Key: prep.dmg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2271787219087360
+    m_Key: pause.to_smithy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475067502592
+    m_Key: pause.main_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388672
+    m_Key: save.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388673
+    m_Key: save.menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388674
+    m_Key: save.quick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388675
+    m_Key: save.name_ph
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388676
+    m_Key: save.save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388677
+    m_Key: save.load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388678
+    m_Key: save.delete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2276290123198464
+    m_Key: menu.load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2276290177724416
+    m_Key: menu.load_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646314749952
+    m_Key: prep.available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646365081600
+    m_Key: prep.party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646365081601
+    m_Key: prep.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651513032704
+    m_Key: prep.next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392832
+    m_Key: equip.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392833
+    m_Key: equip.subtitle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392834
+    m_Key: equip.party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392835
+    m_Key: equip.slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392836
+    m_Key: equip.inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392837
+    m_Key: equip.weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392838
+    m_Key: equip.armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392839
+    m_Key: equip.trinket
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392840
+    m_Key: equip.locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392841
+    m_Key: equip.no_weapons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374575472640
+    m_Key: equip.helmet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027072
+    m_Key: equip.chest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027073
+    m_Key: equip.legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027074
+    m_Key: equip.boots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027075
+    m_Key: equip.hands
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027076
+    m_Key: equip.necklace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2339645487771648
+    m_Key: equip.left_hand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2339645554880512
+    m_Key: equip.right_hand
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

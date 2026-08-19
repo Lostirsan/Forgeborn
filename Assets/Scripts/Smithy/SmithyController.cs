@@ -56,6 +56,7 @@ namespace ForgeGame.Smithy
         private Coroutine _shakeRoutine;
         private string _equippedWeaponId = string.Empty;
         private bool _bronzeSeeded;
+        private bool _loaded;
 
         public SmithyDatabase Database => database;
         public InventoryService Inventory => inventory;
@@ -84,8 +85,38 @@ namespace ForgeGame.Smithy
                 if (p != null) p.gameObject.SetActive(false);
 
             LoadGame();
+            BankExpeditionLoot();
             UpdateObjective();
             fader?.FadeIn();
+        }
+
+        // Never lose progress: save when the app is quit or backgrounded (mobile/alt-tab),
+        // once the game has finished loading so we don't clobber the file with a blank state.
+        private void OnApplicationQuit()
+        {
+            if (_loaded) SaveGame(silent: true);
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused && _loaded) SaveGame(silent: true);
+        }
+
+        // Move any loot gathered in the dungeon into the real inventory, then persist it.
+        private void BankExpeditionLoot()
+        {
+            if (inventory == null || !ForgeGame.Dungeon.ExpeditionResult.HasLoot) return;
+            int total = 0;
+            foreach (var s in ForgeGame.Dungeon.ExpeditionResult.Drain())
+            {
+                inventory.AddItem(s.itemId, s.amount);
+                total += s.amount;
+            }
+            if (total > 0)
+            {
+                SaveGame(silent: true);
+                Notify($"Добыча из вылазки в инвентаре: +{total}.");
+            }
         }
 
         private void Update()
@@ -164,7 +195,7 @@ namespace ForgeGame.Smithy
                 case SmithyStation.Foundry: OpenPanel(PanelId.Foundry); break;
                 case SmithyStation.Anvil: OpenPanel(PanelId.Anvil); break;
                 case SmithyStation.AssemblyTable: OpenPanel(PanelId.Assembly); break;
-                case SmithyStation.DungeonDoor: GoToDungeon(); break;
+                case SmithyStation.DungeonDoor: OpenPanel(PanelId.DungeonPrep); break;
                 case SmithyStation.MainMenuDoor: OpenPanel(PanelId.Pause); break;
             }
         }
@@ -301,6 +332,7 @@ namespace ForgeGame.Smithy
             {
                 SeedNewGame();
             }
+            _loaded = true;
         }
 
         private void SeedNewGame()
@@ -316,7 +348,15 @@ namespace ForgeGame.Smithy
 
         public void SaveGame(bool silent)
         {
-            SaveData data = _saveService.Load() ?? SaveData.CreateNew();
+            _saveService.Save(BuildSaveData(_saveService.Load(), null));
+            if (!silent) Notify("Игра сохранена.");
+        }
+
+        // Snapshots the whole smithy into a SaveData, keeping an existing slot name unless one
+        // is supplied. Shared by the quick save and the multi-slot "save as".
+        private SaveData BuildSaveData(SaveData baseData, string overrideName)
+        {
+            var data = baseData ?? SaveData.CreateNew();
             data.sceneName = "Smithy";
             data.smithy ??= new SmithySaveData();
             data.smithy.hasData = true;
@@ -326,8 +366,38 @@ namespace ForgeGame.Smithy
             if (sessionController != null) data.smithy.activeSession = sessionController.Export();
             data.smithy.equippedWeaponId = _equippedWeaponId;
             if (player != null) data.smithy.playerX = player.PositionX;
-            _saveService.Save(data);
-            if (!silent) Notify("Игра сохранена.");
+            if (!string.IsNullOrEmpty(overrideName)) data.slotName = overrideName;
+            return data;
+        }
+
+        // ---- Multi-slot save/load (driven by the Saves panel) ----
+
+        public int ActiveSlot => _saveService.ActiveSlot;
+        public System.Collections.Generic.IReadOnlyList<SaveSlotInfo> GetSlots() => _saveService.ListSlots();
+
+        /// <summary>Save the current game into a specific slot, optionally under a new name.</summary>
+        public void SaveToSlot(int slot, string name)
+        {
+            var existing = _saveService.Load(slot);
+            string finalName = !string.IsNullOrEmpty(name) ? name.Trim()
+                : (existing != null && !string.IsNullOrEmpty(existing.slotName) ? existing.slotName : null);
+            var data = BuildSaveData(existing, finalName);
+            _saveService.Save(slot, data);
+            _saveService.SetActiveSlot(slot);
+            Notify($"Сохранено: {(!string.IsNullOrEmpty(data.slotName) ? data.slotName : $"Слот {slot + 1}")}");
+        }
+
+        /// <summary>Make a slot active and reload the smithy so its data is applied.</summary>
+        public void LoadSlot(int slot)
+        {
+            _saveService.SetActiveSlot(slot);
+            LoadSceneWithFade("Smithy");
+        }
+
+        public void DeleteSlot(int slot)
+        {
+            _saveService.Delete(slot);
+            Notify("Слот удалён.");
         }
 
         // ---- Transitions ----
@@ -344,6 +414,7 @@ namespace ForgeGame.Smithy
                 Notify("Подземелье пока недоступно.");
                 return;
             }
+            SaveGame(silent: true); // bank smithy progress before the run so nothing is lost if you quit below
             LoadSceneWithFade(dungeonSceneName);
         }
 

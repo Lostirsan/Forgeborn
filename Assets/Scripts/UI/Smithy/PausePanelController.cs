@@ -9,6 +9,7 @@ namespace ForgeGame.UI.Smithy
     {
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button saveButton;
+        [SerializeField] private Button slotsButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button mainMenuButton;
 
@@ -16,6 +17,7 @@ namespace ForgeGame.UI.Smithy
         {
             if (resumeButton != null) resumeButton.onClick.AddListener(() => Controller?.ClosePanel());
             if (saveButton != null) saveButton.onClick.AddListener(() => Controller?.SaveGame());
+            if (slotsButton != null) slotsButton.onClick.AddListener(() => Controller?.OpenPanel(PanelId.SaveSlots));
             if (settingsButton != null) settingsButton.onClick.AddListener(() => Controller?.OpenPanel(PanelId.Settings));
             if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ReturnToMenu);
         }

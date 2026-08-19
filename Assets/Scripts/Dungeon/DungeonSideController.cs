@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ForgeGame.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -44,11 +45,22 @@ namespace ForgeGame.Dungeon
         [SerializeField] private float oreSpawnChance = 0.55f;
         [SerializeField] private float pickupRadius = 1.2f;
 
+        [Header("Combat")]
+        [SerializeField] private DungeonCombat combat;
+        [SerializeField] private DungeonPauseController pause;
+        [SerializeField] private Transform leaderView;    // hidden if the player left the leader behind
+        [SerializeField] private Transform companionView; // hidden if the player left the companion behind
+        [SerializeField] private float firstEncounterDepth = 6f; // no fights before this depth
+        [SerializeField] private float encounterMinGap = 12f;
+        [SerializeField] private float encounterMaxGap = 22f;
+
         private float _halfW, _partyX, _nextLocalX, _dist;
         private readonly Queue<GameObject> _segments = new Queue<GameObject>();
         private Vector3 _partyHome, _glowBase, _flameBase, _visionBase, _visionPos;
         private DungeonOre _targetOre;
         private int _segIndex;
+        private float _nextEncounterAt;
+        private float _visionMult = 1f, _visionShiftX;
 
         private void Awake()
         {
@@ -58,17 +70,51 @@ namespace ForgeGame.Dungeon
             if (torchGlow != null) _glowBase = torchGlow.transform.localScale;
             if (torchFlame != null) _flameBase = torchFlame.localScale;
             if (visionTransform != null) { _visionBase = visionTransform.localScale; _visionPos = visionTransform.localPosition; }
+
+            // Honor the smithy loadout: hide any hero the player left behind for the run.
+            if (ExpeditionLoadout.configured)
+            {
+                if (!ExpeditionLoadout.takeLeader && leaderView != null) leaderView.gameObject.SetActive(false);
+                if (!ExpeditionLoadout.takeCompanion && companionView != null) companionView.gameObject.SetActive(false);
+            }
         }
 
         private void Start()
         {
             _nextLocalX = Mathf.Floor((-_halfW - segmentWidth) / segmentWidth) * segmentWidth;
+            _nextEncounterAt = firstEncounterDepth + Random.Range(0f, encounterMinGap);
             FillAhead();
         }
 
         private void Update()
         {
             var kb = Keyboard.current;
+            bool esc = kb != null && kb.escapeKey.wasPressedThisFrame;
+
+            // ESC menu takes priority. Open it pauses the run (and any fight) via timeScale;
+            // while open, ESC steps back out (settings → pause → resume). Inventory closes first.
+            if (pause != null && pause.IsOpen)
+            {
+                if (esc) { if (pause.SettingsOpen) pause.CloseSettings(); else pause.Resume(); }
+                return;
+            }
+            if (esc)
+            {
+                if (inventoryPanel != null && inventoryPanel.activeSelf) inventoryPanel.SetActive(false);
+                else if (pause != null) pause.Open();
+                return;
+            }
+
+            // While a fight is on, the world is frozen: only the torch keeps living and the
+            // inventory can still be toggled. Combat runs itself in DungeonCombat.
+            if (combat != null && combat.InCombat)
+            {
+                if (kb != null && kb.iKey.wasPressedThisFrame && inventoryPanel != null)
+                    inventoryPanel.SetActive(!inventoryPanel.activeSelf);
+                FlickerTorch();
+                return;
+            }
+
             HandleClick();
 
             bool walking = false;
@@ -78,6 +124,7 @@ namespace ForgeGame.Dungeon
                 worldRoot.position += Vector3.left * (moveSpeed * Time.deltaTime);
                 _dist += moveSpeed * Time.deltaTime;
                 walking = true;
+                if (combat != null && _dist >= _nextEncounterAt) { combat.StartEncounter(Mathf.RoundToInt(_dist)); return; }
             }
 
             if (party != null)
@@ -88,16 +135,11 @@ namespace ForgeGame.Dungeon
 
             if (kb != null && kb.iKey.wasPressedThisFrame && inventoryPanel != null)
                 inventoryPanel.SetActive(!inventoryPanel.activeSelf);
-            if (kb != null && kb.escapeKey.wasPressedThisFrame)
-            {
-                if (inventoryPanel != null && inventoryPanel.activeSelf) inventoryPanel.SetActive(false);
-                else SceneManager.LoadScene(smithySceneName);
-            }
 
             FlickerTorch();
             FillAhead();
             CullBehind();
-            if (depthLabel != null) depthLabel.text = $"Глубина: {_dist:0} м";
+            if (depthLabel != null) depthLabel.text = Loc.Format("dungeon.depth", Mathf.RoundToInt(_dist));
         }
 
         private void HandleClick()
@@ -120,10 +162,27 @@ namespace ForgeGame.Dungeon
             if (Mathf.Abs(_targetOre.transform.position.x - _partyX) < pickupRadius)
             {
                 if (hotbar != null) hotbar.Add(_targetOre.itemId, oreSprite, _targetOre.amount);
+                ExpeditionResult.Add(_targetOre.itemId, _targetOre.amount); // banked into the smithy on return
                 Destroy(_targetOre.gameObject);
                 _targetOre = null;
             }
             return true;
+        }
+
+        // Combat widens and pushes the torchlight forward so the battlefield is visible;
+        // exploration restores the tight torch circle.
+        public void SetCombatMode(bool on)
+        {
+            _visionMult = on ? 2.1f : 1f;
+            _visionShiftX = on ? 2.6f : 0f;
+        }
+
+        // Called by DungeonCombat when a fight ends. Victory → keep delving (schedule the next
+        // ambush); defeat → the run is over, back to the smithy.
+        public void OnCombatEnd(bool victory)
+        {
+            if (!victory) { SceneManager.LoadScene(smithySceneName); return; }
+            _nextEncounterAt = _dist + Random.Range(encounterMinGap, encounterMaxGap);
         }
 
         private void FlickerTorch()
@@ -137,9 +196,9 @@ namespace ForgeGame.Dungeon
             {
                 float sx = 0.90f + flick * 0.16f + (Mathf.PerlinNoise(t * 7f, 20f) - 0.5f) * 0.08f;
                 float sy = 0.90f + flick * 0.16f + (Mathf.PerlinNoise(t * 9f, 40f) - 0.5f) * 0.08f;
-                visionTransform.localScale = new Vector3(_visionBase.x * sx, _visionBase.y * sy, 1f);
+                visionTransform.localScale = new Vector3(_visionBase.x * sx * _visionMult, _visionBase.y * sy * _visionMult, 1f);
                 visionTransform.localPosition = _visionPos + new Vector3(
-                    (Mathf.PerlinNoise(t * 8f, 1f) - 0.5f) * 0.30f,
+                    _visionShiftX + (Mathf.PerlinNoise(t * 8f, 1f) - 0.5f) * 0.30f,
                     (Mathf.PerlinNoise(t * 8f, 2f) - 0.5f) * 0.26f, 0f);
             }
             if (torchGlow != null)

@@ -59,6 +59,9 @@ namespace ForgeGame.EditorTools
             BuildPausePanel();
             BuildSettingsPanel();
             BuildDebugPanel();
+            BuildDungeonPrepPanel();
+            BuildDungeonEquipPanel();
+            BuildSaveSlotsPanel();
 
             // Blocks input during a view transition (above panels, below fader).
             BuildTransitionBlocker();
@@ -207,6 +210,8 @@ namespace ForgeGame.EditorTools
             var objective = AddLabel(hud, "", 0, 1, 900, 40, 24, TextLight, TextAlignmentOptions.Center);
             Anchor(objective.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -30), new Vector2(1100, 40));
 
+            var dngBtn = AddButton(hud, "В подземелье", 0, 0, 280, 54); LocalizeBtn(dngBtn, "hud.to_dungeon");
+            Anchor(dngBtn.GetComponent<RectTransform>(), new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-600, -34), new Vector2(280, 54));
             var invBtn = AddButton(hud, "Инвентарь (I)", 0, 0, 240, 54);
             Anchor(invBtn.GetComponent<RectTransform>(), new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-300, -34), new Vector2(240, 54));
             var jrnBtn = AddButton(hud, "Журнал (J)", 0, 0, 240, 54);
@@ -220,6 +225,7 @@ namespace ForgeGame.EditorTools
                 SetRef(so, "objectiveText", objective);
                 SetRef(so, "inventoryButton", invBtn);
                 SetRef(so, "journalButton", jrnBtn);
+                SetRef(so, "dungeonButton", dngBtn);
             });
         }
 
@@ -971,15 +977,17 @@ namespace ForgeGame.EditorTools
 
         private static void BuildPausePanel()
         {
-            var p = AddPanel<PausePanelController>(PanelId.Pause, "Пауза", new Vector2(700, 640), out var w);
-            var resume = AddButton(w, "Продолжить", 0, 150, 460, 66);
-            var save = AddButton(w, "Сохранить", 0, 70, 460, 66);
-            var settings = AddButton(w, "Настройки", 0, -10, 460, 66);
-            var menu = AddButton(w, "В главное меню", 0, -90, 460, 66);
+            var p = AddPanel<PausePanelController>(PanelId.Pause, "Пауза", new Vector2(700, 680), out var w, titleKey: "pause.title");
+            var resume = AddButton(w, "Продолжить", 0, 190, 460, 66); LocalizeBtn(resume, "menu.continue");
+            var save = AddButton(w, "Быстрое сохранение", 0, 110, 460, 66); LocalizeBtn(save, "save.quick");
+            var slots = AddButton(w, "Сохранения…", 0, 30, 460, 66); LocalizeBtn(slots, "save.menu");
+            var settings = AddButton(w, "Настройки", 0, -50, 460, 66); LocalizeBtn(settings, "menu.settings");
+            var menu = AddButton(w, "В главное меню", 0, -130, 460, 66); LocalizeBtn(menu, "pause.main_menu");
             WireComponent(p, so =>
             {
                 SetRef(so, "resumeButton", resume);
                 SetRef(so, "saveButton", save);
+                SetRef(so, "slotsButton", slots);
                 SetRef(so, "settingsButton", settings);
                 SetRef(so, "mainMenuButton", menu);
             });
@@ -1034,6 +1042,225 @@ namespace ForgeGame.EditorTools
                 SetRef(so, "backButton", back);
             });
             FinishPanel(p, PanelId.Debug, back.gameObject);
+        }
+
+        private static void BuildDungeonPrepPanel()
+        {
+            DungeonArtGenerator.EnsureAll();
+            var portraitKnight = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DungeonArtGenerator.PortraitKnight);
+            var portraitComp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DungeonArtGenerator.PortraitCompanion);
+
+            var p = AddPanel<DungeonPrepPanelController>(PanelId.DungeonPrep, "Снаряжение отряда", new Vector2(1360, 820), out var w, titleKey: "prep.title");
+            Localize(AddLabel(w, "Выберите, кто идёт в поход", 0, 310, 900, 40, 26, TextDim, TextAlignmentOptions.Center), "prep.subtitle");
+
+            var div = NewChild(w, "Divider", new Vector2(-20, -20), new Vector2(3, 580));
+            AddImage(div, new Color(0.4f, 0.34f, 0.26f, 0.4f), false);
+
+            // ---- LEFT: available characters (bench). Everyone starts here. ----
+            Localize(AddLabel(w, "Доступные", -360, 280, 500, 44, 32, Accent, TextAlignmentOptions.Center), "prep.available");
+            var leaderAvail = MakeRosterEntry(w, new Vector2(-360, 110), portraitKnight, "hero.knight", out var leaderAvailBtn);
+            var compAvail = MakeRosterEntry(w, new Vector2(-360, -140), portraitComp, "hero.companion", out var compAvailBtn);
+            var availEmpty = AddLabel(w, "", -360, 30, 500, 44, 26, TextDim, TextAlignmentOptions.Center);
+            Localize(availEmpty, "prep.none");
+
+            // ---- RIGHT: the party that descends ----
+            Localize(AddLabel(w, "В отряде", 360, 280, 500, 44, 32, Accent, TextAlignmentOptions.Center), "prep.party");
+            var leaderParty = MakeRosterEntry(w, new Vector2(360, 110), portraitKnight, "hero.knight", out var leaderPartyBtn);
+            var compParty = MakeRosterEntry(w, new Vector2(360, -140), portraitComp, "hero.companion", out var compPartyBtn);
+            var partyEmpty = AddLabel(w, "", 360, 30, 500, 44, 26, TextDim, TextAlignmentOptions.Center);
+            Localize(partyEmpty, "prep.none");
+
+            var back = AddButton(w, "Назад", -470, -330, 240, 70); LocalizeBtn(back, "common.back");
+            var next = AddButton(w, "Далее", 300, -330, 360, 84); LocalizeBtn(next, "prep.next");
+
+            WireComponent(p, so =>
+            {
+                SetRef(so, "leaderAvailable", leaderAvail.gameObject);
+                SetRef(so, "leaderAvailableButton", leaderAvailBtn);
+                SetRef(so, "companionAvailable", compAvail.gameObject);
+                SetRef(so, "companionAvailableButton", compAvailBtn);
+                SetRef(so, "availableEmpty", availEmpty.gameObject);
+                SetRef(so, "leaderParty", leaderParty.gameObject);
+                SetRef(so, "leaderPartyButton", leaderPartyBtn);
+                SetRef(so, "companionParty", compParty.gameObject);
+                SetRef(so, "companionPartyButton", compPartyBtn);
+                SetRef(so, "partyEmpty", partyEmpty.gameObject);
+                SetRef(so, "nextButton", next);
+                SetRef(so, "backButton", back);
+            });
+            FinishPanel(p, PanelId.DungeonPrep, next.gameObject);
+        }
+
+        // A roster entry: a clickable portrait with the character's name below.
+        private static RectTransform MakeRosterEntry(RectTransform w, Vector2 pos, Sprite portrait, string nameKey, out Button button)
+        {
+            var group = NewChild(w, "Roster", pos, new Vector2(260, 230));
+            button = AddPortraitButton(group, new Vector2(0, 40), new Vector2(150, 150), portrait);
+            Localize(AddLabel(group, "", 0, -70, 260, 40, 28, TextLight, TextAlignmentOptions.Center), nameKey);
+            return group;
+        }
+
+        private static void BuildDungeonEquipPanel()
+        {
+            DungeonArtGenerator.EnsureAll();
+            var portraitKnight = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DungeonArtGenerator.PortraitKnight);
+            var portraitComp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DungeonArtGenerator.PortraitCompanion);
+
+            FoundryArtGenerator.EnsureAll();
+            Sprite LoadS(string pth) => UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(pth);
+
+            var p = AddPanel<DungeonEquipPanelController>(PanelId.DungeonEquip, "Снаряжение отряда", new Vector2(1500, 860), out var w, titleKey: "equip.title");
+            Localize(AddLabel(w, "Экипируйте каждого героя", 0, 340, 900, 40, 26, TextDim, TextAlignmentOptions.Center), "equip.subtitle");
+
+            // ---- LEFT column: party portraits (select who to equip) ----
+            Localize(AddLabel(w, "Отряд", -600, 280, 300, 40, 30, Accent, TextAlignmentOptions.Center), "equip.party");
+            var leaderEntry = NewChild(w, "LeaderEntry", new Vector2(-600, 130), new Vector2(260, 230));
+            var leaderSel = AddPortraitButton(leaderEntry, new Vector2(0, 40), new Vector2(150, 150), portraitKnight);
+            var leaderPortImg = leaderSel.GetComponent<Image>();
+            Localize(AddLabel(leaderEntry, "Рыцарь", 0, -70, 260, 36, 24, TextLight, TextAlignmentOptions.Center), "hero.knight");
+            var compEntry = NewChild(w, "CompEntry", new Vector2(-600, -120), new Vector2(260, 230));
+            var compSel = AddPortraitButton(compEntry, new Vector2(0, 40), new Vector2(150, 150), portraitComp);
+            var compPortImg = compSel.GetComponent<Image>();
+            Localize(AddLabel(compEntry, "Спутник", 0, -70, 260, 36, 24, TextLight, TextAlignmentOptions.Center), "hero.companion");
+
+            var d1 = NewChild(w, "Div1", new Vector2(-450, 0), new Vector2(3, 660)); AddImage(d1, new Color(0.4f, 0.34f, 0.26f, 0.4f), false);
+            var d2 = NewChild(w, "Div2", new Vector2(150, 0), new Vector2(3, 660)); AddImage(d2, new Color(0.4f, 0.34f, 0.26f, 0.4f), false);
+
+            // ---- MIDDLE column: paper-doll. Armour runs down the CENTRE; a hand slot sits on
+            // each side, with the necklace above the left hand and the trinket above the right. ----
+            Localize(AddLabel(w, "Снаряжение", -150, 300, 560, 40, 30, Accent, TextAlignmentOptions.Center), "equip.slots");
+            AddStaticSlot(w, new Vector2(-150, 210), LoadS(FoundryArtGenerator.SlotHelmet), "equip.helmet");
+            AddStaticSlot(w, new Vector2(-150, 70), LoadS(FoundryArtGenerator.SlotChest), "equip.chest");
+            AddStaticSlot(w, new Vector2(-150, -70), LoadS(FoundryArtGenerator.SlotLegs), "equip.legs");
+            AddStaticSlot(w, new Vector2(-150, -210), LoadS(FoundryArtGenerator.SlotBoots), "equip.boots");
+            // Left side: necklace above the left hand (off-hand placeholder for now).
+            AddStaticSlot(w, new Vector2(-330, 180), LoadS(FoundryArtGenerator.SlotNecklace), "equip.necklace");
+            AddStaticSlot(w, new Vector2(-330, -40), LoadS(FoundryArtGenerator.SlotHands), "equip.left_hand");
+            // Right side: trinket above the right hand (the functional weapon slot).
+            AddStaticSlot(w, new Vector2(30, 180), LoadS(FoundryArtGenerator.SlotTrinket), "equip.trinket");
+
+            var handsBtn = AddPortraitButton(w, new Vector2(30, -40), new Vector2(118, 118), null);
+            handsBtn.GetComponent<Image>().color = new Color(0.1f, 0.09f, 0.08f, 1f);
+            var handsSil = AddSpriteChild(handsBtn.GetComponent<RectTransform>(), "Sil", Vector2.zero, new Vector2(84, 84), LoadS(FoundryArtGenerator.SlotHands));
+            handsSil.preserveAspect = true; handsSil.raycastTarget = false;
+            var wSlotIcon = AddSpriteChild(handsBtn.GetComponent<RectTransform>(), "Weapon", Vector2.zero, new Vector2(98, 98), null);
+            wSlotIcon.preserveAspect = true; wSlotIcon.raycastTarget = false;
+            Localize(AddLabel(w, "", 30, -120, 200, 28, 18, TextLight, TextAlignmentOptions.Center), "equip.right_hand");
+            var wSlotLabel = AddLabel(w, "", 30, 66, 240, 30, 18, Accent, TextAlignmentOptions.Center);
+
+            // ---- RIGHT column: weapon inventory grid ----
+            Localize(AddLabel(w, "Инвентарь", 400, 300, 500, 40, 30, Accent, TextAlignmentOptions.Center), "equip.inventory");
+            const int N = 8;
+            var invButtons = new Button[N]; var invIcons = new Image[N]; var invLabels = new TMP_Text[N];
+            for (int i = 0; i < N; i++)
+            {
+                int col = i % 2, row = i / 2;
+                float ix = 300 + col * 175;
+                float iy = 180 - row * 155;
+                var b = AddPortraitButton(w, new Vector2(ix, iy), new Vector2(130, 130), null);
+                b.GetComponent<Image>().color = new Color(0.12f, 0.11f, 0.10f, 1f);
+                invButtons[i] = b;
+                invIcons[i] = AddSpriteChild(b.GetComponent<RectTransform>(), "Icon", new Vector2(0, 10), new Vector2(104, 104), null);
+                invIcons[i].preserveAspect = true; invIcons[i].raycastTarget = false;
+                invLabels[i] = AddLabel(b.GetComponent<RectTransform>(), "", 0, -74, 150, 30, 18, TextLight, TextAlignmentOptions.Center);
+            }
+
+            var back = AddButton(w, "Назад", -560, -360, 240, 70); LocalizeBtn(back, "common.back");
+            var descend = AddButton(w, "Спуститься", 300, -360, 360, 84); LocalizeBtn(descend, "prep.descend");
+
+            // Weapon icon lookup (blueprint id → recipe icon), for the slot/inventory.
+            var wpIds = new[] { "bronze_sword", "bronze_knife", "bronze_sickle", "bronze_hammer", "bronze_scythe", "bronze_pitchfork" };
+            var wpSprites = new Sprite[wpIds.Length];
+            for (int i = 0; i < wpIds.Length; i++)
+                wpSprites[i] = LoadS(FoundryArtGenerator.IconPath(FoundryArtGenerator.ShapeForBlueprint(wpIds[i])));
+
+            WireComponent(p, so =>
+            {
+                SetRef(so, "leaderSelectButton", leaderSel);
+                SetRef(so, "companionSelectButton", compSel);
+                SetRef(so, "leaderPortrait", leaderPortImg);
+                SetRef(so, "companionPortrait", compPortImg);
+                SetRef(so, "leaderEntry", leaderEntry.gameObject);
+                SetRef(so, "companionEntry", compEntry.gameObject);
+                SetRef(so, "weaponSlotButton", handsBtn);
+                SetRef(so, "weaponSlotIcon", wSlotIcon);
+                SetRef(so, "weaponSlotLabel", wSlotLabel);
+                SetObjArray(so, "invButtons", invButtons);
+                SetObjArray(so, "invIcons", invIcons);
+                SetObjArray(so, "invLabels", invLabels);
+                SetStrArray(so, "weaponIconIds", wpIds);
+                SetObjArray(so, "weaponIconSprites", wpSprites);
+                SetRef(so, "descendButton", descend);
+                SetRef(so, "backButton", back);
+            });
+            FinishPanel(p, PanelId.DungeonEquip, descend.gameObject);
+        }
+
+        // A static gear slot: a dim frame with the slot-type silhouette and a caption below.
+        private static void AddStaticSlot(RectTransform w, Vector2 pos, Sprite icon, string labelKey)
+        {
+            var bg = NewChild(w, "Slot", pos, new Vector2(118, 118));
+            AddImage(bg, new Color(0.1f, 0.09f, 0.08f, 1f), false);
+            var ic = AddSpriteChild(bg, "Icon", Vector2.zero, new Vector2(84, 84), icon);
+            ic.preserveAspect = true; ic.raycastTarget = false;
+            Localize(AddLabel(w, "", pos.x, pos.y - 80, 180, 28, 18, TextDim, TextAlignmentOptions.Center), labelKey);
+        }
+
+        // A clickable portrait: an aspect-fit sprite with a Button on top.
+        private static Button AddPortraitButton(RectTransform parent, Vector2 pos, Vector2 size, Sprite sprite)
+        {
+            var rt = NewChild(parent, "Portrait", pos, size);
+            var img = rt.gameObject.AddComponent<Image>();
+            img.sprite = sprite != null ? sprite : _white;
+            img.preserveAspect = true; img.raycastTarget = true;
+            var btn = rt.gameObject.AddComponent<Button>();
+            var cb = btn.colors; cb.highlightedColor = new Color(1.15f, 1.1f, 0.95f);
+            cb.pressedColor = new Color(0.85f, 0.8f, 0.7f); btn.colors = cb;
+            return btn;
+        }
+
+        private static void BuildSaveSlotsPanel()
+        {
+            const int N = 6; // must match LocalSaveGameService slot count
+            var p = AddPanel<SaveSlotsPanelController>(PanelId.SaveSlots, "Сохранения", new Vector2(1180, 900), out var w, titleKey: "save.title");
+
+            // "Save as" name field at the top.
+            var input = AddInputField(w, -70, 320, 760, 60);
+            var ph = input.transform.Find("Text Area/Placeholder")?.GetComponent<TMP_Text>();
+            if (ph != null) Localize(ph, "save.name_ph");
+
+            var nameLabels = new TMP_Text[N];
+            var dateLabels = new TMP_Text[N];
+            var saveBtns = new Button[N];
+            var loadBtns = new Button[N];
+            var delBtns = new Button[N];
+
+            float y0 = 230f, step = 80f;
+            for (int i = 0; i < N; i++)
+            {
+                float ry = y0 - i * step;
+                var row = NewChild(w, "Row" + i, new Vector2(0, ry), new Vector2(1120, 72));
+                AddImage(row, new Color(0.06f, 0.055f, 0.05f, 0.6f), false);
+                nameLabels[i] = AddLabel(row, "", -390, 4, 300, 40, 28, TextLight, TextAlignmentOptions.Left);
+                dateLabels[i] = AddLabel(row, "", -100, 4, 220, 32, 20, TextDim, TextAlignmentOptions.Left);
+                saveBtns[i] = AddButton(row, "Сохранить", 150, 0, 140, 54); LocalizeBtn(saveBtns[i], "save.save");
+                loadBtns[i] = AddButton(row, "Загрузить", 315, 0, 140, 54); LocalizeBtn(loadBtns[i], "save.load");
+                delBtns[i] = AddButton(row, "Удалить", 480, 0, 140, 54); LocalizeBtn(delBtns[i], "save.delete");
+            }
+
+            var back = AddButton(w, "Назад", 0, -350, 260, 60); LocalizeBtn(back, "common.back");
+
+            WireComponent(p, so =>
+            {
+                SetRef(so, "nameInput", input);
+                SetObjArray(so, "nameLabels", nameLabels);
+                SetObjArray(so, "dateLabels", dateLabels);
+                SetObjArray(so, "saveButtons", saveBtns);
+                SetObjArray(so, "loadButtons", loadBtns);
+                SetObjArray(so, "deleteButtons", delBtns);
+                SetRef(so, "backButton", back);
+            });
+            FinishPanel(p, PanelId.SaveSlots, back.gameObject);
         }
 
         // =====================================================================

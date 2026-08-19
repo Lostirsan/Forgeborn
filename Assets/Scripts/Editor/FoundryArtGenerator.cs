@@ -59,6 +59,16 @@ namespace ForgeGame.EditorTools
         public const string WpScythe = Dir + "/Weapon_Scythe.png";
         public const string WpKnife = Dir + "/Weapon_Knife.png";
         public const string WpPitchfork = Dir + "/Weapon_Pitchfork.png";
+
+        // Equipment-slot placeholder icons (dim silhouettes shown when a slot is empty).
+        public const string SlotHelmet = Dir + "/Slot_Helmet.png";
+        public const string SlotChest = Dir + "/Slot_Chest.png";
+        public const string SlotLegs = Dir + "/Slot_Legs.png";
+        public const string SlotBoots = Dir + "/Slot_Boots.png";
+        public const string SlotHands = Dir + "/Slot_Hands.png";     // two-handed weapon slot
+        public const string SlotNecklace = Dir + "/Slot_Necklace.png";
+        public const string SlotTrinket = Dir + "/Slot_Trinket.png";
+
         public const string WorkbenchPanel = Dir + "/Foundry_WorkbenchPanel.png";
         public const string Tang = Dir + "/Foundry_Tang.png"; // metal rod the hilt is threaded onto
         public const string MeltGauge = Dir + "/Foundry_MeltGauge.png";   // semicircular melt gauge (LOW→good→overheat)
@@ -166,6 +176,13 @@ namespace ForgeGame.EditorTools
                 Make(force, MoldMaskPath(shape), () => MakeMoldMask(shape));
                 Make(force, CastPath(shape), () => MakeCast(shape));
             }
+            Make(force, SlotHelmet, MakeSlotHelmet);
+            Make(force, SlotChest, MakeSlotChest);
+            Make(force, SlotLegs, MakeSlotLegs);
+            Make(force, SlotBoots, MakeSlotBoots);
+            Make(force, SlotHands, MakeSlotHands);
+            Make(force, SlotNecklace, MakeSlotNecklace);
+            Make(force, SlotTrinket, MakeSlotTrinket);
             Make(force, WorkbenchPanel, MakeWorkbenchPanel);
             Make(force, Tang, MakeTang);
             Make(force, MeltGauge, MakeMeltGauge);
@@ -855,6 +872,86 @@ namespace ForgeGame.EditorTools
                 int half = (int)(a * Mathf.Sqrt(t));
                 c.Row(cx - half, cx + half, cy + dy, col);
             }
+        }
+
+        // ---- Equipment-slot silhouette icons (96², dim, transparent bg) ----
+        private static readonly Color SlotSil = new Color(0.60f, 0.60f, 0.66f, 0.7f);
+        private static readonly Color SlotSilHi = new Color(0.78f, 0.78f, 0.84f, 0.7f);
+
+        private static void MakeSlotHelmet()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            c.Disc(w / 2, (int)(h * 0.58f), (int)(w * 0.30f), SlotSil);              // dome
+            c.Rect((int)(w * 0.20f), (int)(h * 0.34f), (int)(w * 0.80f), (int)(h * 0.60f), SlotSil); // face guard
+            c.Rect((int)(w * 0.30f), (int)(h * 0.44f), (int)(w * 0.70f), (int)(h * 0.52f), new Color(0, 0, 0, 0.5f)); // visor slit
+            c.Rect((int)(w * 0.47f), (int)(h * 0.58f), (int)(w * 0.53f), (int)(h * 0.86f), SlotSilHi); // comb
+            c.Save(SlotHelmet, 100f);
+        }
+
+        private static void MakeSlotChest()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            c.Disc((int)(w * 0.28f), (int)(h * 0.70f), (int)(w * 0.16f), SlotSil);   // shoulders
+            c.Disc((int)(w * 0.72f), (int)(h * 0.70f), (int)(w * 0.16f), SlotSil);
+            c.Rect((int)(w * 0.22f), (int)(h * 0.20f), (int)(w * 0.78f), (int)(h * 0.72f), SlotSil); // torso
+            c.Tri(w / 2, (int)(h * 0.20f), (int)(w * 0.28f), (int)(h * 0.22f), SlotSil);            // waist taper (apex down via inverted? use bottom point)
+            c.Rect((int)(w * 0.46f), (int)(h * 0.30f), (int)(w * 0.54f), (int)(h * 0.70f), SlotSilHi); // centre ridge
+            c.Save(SlotChest, 100f);
+        }
+
+        private static void MakeSlotLegs()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            c.Rect((int)(w * 0.26f), (int)(h * 0.72f), (int)(w * 0.74f), (int)(h * 0.86f), SlotSil); // belt
+            c.Rect((int)(w * 0.28f), (int)(h * 0.12f), (int)(w * 0.46f), (int)(h * 0.74f), SlotSil); // left leg
+            c.Rect((int)(w * 0.54f), (int)(h * 0.12f), (int)(w * 0.72f), (int)(h * 0.74f), SlotSil); // right leg
+            c.Save(SlotLegs, 100f);
+        }
+
+        private static void MakeSlotBoots()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Two L-shaped boots.
+            c.Rect((int)(w * 0.24f), (int)(h * 0.30f), (int)(w * 0.38f), (int)(h * 0.80f), SlotSil);
+            c.Rect((int)(w * 0.24f), (int)(h * 0.18f), (int)(w * 0.52f), (int)(h * 0.32f), SlotSil);
+            c.Rect((int)(w * 0.60f), (int)(h * 0.30f), (int)(w * 0.74f), (int)(h * 0.80f), SlotSil);
+            c.Rect((int)(w * 0.48f), (int)(h * 0.18f), (int)(w * 0.76f), (int)(h * 0.32f), SlotSil);
+            c.Save(SlotBoots, 100f);
+        }
+
+        private static void MakeSlotHands()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Two-handed weapon silhouette (long grip + crossguard + blade).
+            c.Rect((int)(w * 0.46f), (int)(h * 0.06f), (int)(w * 0.54f), (int)(h * 0.40f), SlotSilHi); // grip
+            c.Disc(w / 2, (int)(h * 0.06f), (int)(w * 0.07f), SlotSilHi);                              // pommel
+            c.Rect((int)(w * 0.28f), (int)(h * 0.40f), (int)(w * 0.72f), (int)(h * 0.47f), SlotSil);   // crossguard
+            c.Tri(w / 2, (int)(h * 0.96f), (int)(w * 0.10f), (int)(h * 0.49f), SlotSil);               // blade
+            c.Save(SlotHands, 100f);
+        }
+
+        private static void MakeSlotNecklace()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            Arc(c, w * 0.5f, h * 0.78f, w * 0.30f, 200f, 340f, 3, SlotSil);   // chain arc
+            c.Disc(w / 2, (int)(h * 0.36f), (int)(w * 0.12f), SlotSilHi);      // pendant
+            c.Ring(w / 2, (int)(h * 0.36f), (int)(w * 0.12f), (int)(w * 0.08f), SlotSil);
+            c.Save(SlotNecklace, 100f);
+        }
+
+        private static void MakeSlotTrinket()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Faceted gem (two triangles) + a small ring on top.
+            c.Ring(w / 2, (int)(h * 0.82f), (int)(w * 0.09f), (int)(w * 0.05f), SlotSil);
+            c.Tri(w / 2, (int)(h * 0.74f), (int)(w * 0.24f), (int)(h * 0.26f), SlotSilHi); // upper (apex up)
+            for (int i = 0; i < (int)(h * 0.30f); i++)
+            {
+                float t = i / (h * 0.30f);
+                int hb = (int)(w * 0.24f * (1f - t));
+                c.Row(w / 2 - hb, w / 2 + hb, (int)(h * 0.16f) + i, SlotSil); // lower (apex down)
+            }
+            c.Save(SlotTrinket, 100f);
         }
 
         private static void MakeTang()

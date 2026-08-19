@@ -319,6 +319,274 @@ MonoBehaviour:
     m_Localized: Refractario, fiable
     m_Metadata:
       m_Items: []
+  - m_Id: 2149327278432256
+    m_Localized: 'Profundidad: {0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763904
+    m_Localized: "I \u2014 cerrar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763905
+    m_Localized: Pausa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763906
+    m_Localized: "Salir al men\xFA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763907
+    m_Localized: 'Turno: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763908
+    m_Localized: "\xA1Enemigos surgen de la oscuridad!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763909
+    m_Localized: "\xA1Victoria!  +{0} de mineral"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763910
+    m_Localized: "El grupo ha ca\xEDdo\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763911
+    m_Localized: "{0} est\xE1 aturdido y pierde el turno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763912
+    m_Localized: "{0} golpea a {1}: \u2212{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763913
+    m_Localized: ' (defendido)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763914
+    m_Localized: "{0}: {1} sobre {2} \u2212{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763915
+    m_Localized: ' (aturde)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763916
+    m_Localized: '{0} cura a {1}: +{2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763917
+    m_Localized: '{0} se defiende.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763918
+    m_Localized: Rata
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763919
+    m_Localized: Goblin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763920
+    m_Localized: Bruto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763921
+    m_Localized: Caballero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763922
+    m_Localized: "Compa\xF1ero"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763923
+    m_Localized: Golpe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763924
+    m_Localized: Quiebre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763925
+    m_Localized: Defensa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763926
+    m_Localized: Estocada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2149327328763927
+    m_Localized: Vendaje
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128684449792
+    m_Localized: A la mazmorra
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752960
+    m_Localized: Equipar al grupo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752961
+    m_Localized: "A qui\xE9n llevar y c\xF3mo armarlos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752962
+    m_Localized: Descender
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752963
+    m_Localized: Llevar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752964
+    m_Localized: Lidera el grupo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752965
+    m_Localized: 'Arma:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128755752966
+    m_Localized: "Pu\xF1os"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2257128759947264
+    m_Localized: "+{0} da\xF1o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2271787219087360
+    m_Localized: "Volver a la herrer\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475067502592
+    m_Localized: "Men\xFA principal"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388672
+    m_Localized: Guardados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388673
+    m_Localized: "Guardados\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388674
+    m_Localized: "Guardado r\xE1pido"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388675
+    m_Localized: "Nombre del guardado\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388676
+    m_Localized: Guardar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388677
+    m_Localized: Cargar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2274475151388678
+    m_Localized: Eliminar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2276290123198464
+    m_Localized: Cargar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2276290177724416
+    m_Localized: Cargar partida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646314749952
+    m_Localized: Disponibles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646365081600
+    m_Localized: En el grupo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2280646365081601
+    m_Localized: "\u2014 nadie \u2014"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651513032704
+    m_Localized: Siguiente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392832
+    m_Localized: Equipo del grupo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392833
+    m_Localized: "Equipa a cada h\xE9roe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392834
+    m_Localized: Grupo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392835
+    m_Localized: Equipo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392836
+    m_Localized: Inventario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392837
+    m_Localized: Arma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392838
+    m_Localized: Armadura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392839
+    m_Localized: Amuleto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392840
+    m_Localized: Pronto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2288651542392841
+    m_Localized: Sin armas forjadas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374575472640
+    m_Localized: Casco
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027072
+    m_Localized: Peto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027073
+    m_Localized: Piernas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027074
+    m_Localized: Botas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027075
+    m_Localized: Dos manos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2333374609027076
+    m_Localized: Collar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2339645487771648
+    m_Localized: Mano izquierda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2339645554880512
+    m_Localized: Mano derecha
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

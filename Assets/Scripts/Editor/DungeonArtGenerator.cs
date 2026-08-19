@@ -31,6 +31,20 @@ namespace ForgeGame.EditorTools
         public const string SideHeroA = Dir + "/Dungeon_SideHeroA.png";     // torch-bearing leader, facing right
         public const string SideHeroB = Dir + "/Dungeon_SideHeroB.png";     // hooded companion, facing right
 
+        // ---- Combat: enemies (facing LEFT, toward the party), ability icons, HUD bits ----
+        public const string EnemyRat = Dir + "/Dungeon_EnemyRat.png";       // small fast crawler
+        public const string EnemyGoblin = Dir + "/Dungeon_EnemyGoblin.png"; // humanoid with a crude blade
+        public const string EnemyBrute = Dir + "/Dungeon_EnemyBrute.png";   // big slow hulk
+        public const string AbStrike = Dir + "/Dungeon_AbStrike.png";       // sword slash
+        public const string AbBreak = Dir + "/Dungeon_AbBreak.png";         // heavy blow (stagger)
+        public const string AbGuard = Dir + "/Dungeon_AbGuard.png";         // shield / brace
+        public const string AbLunge = Dir + "/Dungeon_AbLunge.png";         // reaching thrust (back rank)
+        public const string AbHeal = Dir + "/Dungeon_AbHeal.png";           // bandage / mend
+        public const string HpBar = Dir + "/Dungeon_HpBar.png";             // white bar, LEFT pivot (fill scales from left)
+        public const string BtnPlate = Dir + "/Dungeon_BtnPlate.png";       // stone button plate
+        public const string PortraitKnight = Dir + "/Dungeon_PortraitKnight.png";       // roster bust — leader
+        public const string PortraitCompanion = Dir + "/Dungeon_PortraitCompanion.png"; // roster bust — companion
+
         [MenuItem("Tools/Forge Game/Generate Dungeon Art")]
         public static void GenerateMenu() { GenerateAll(true); EditorUtility.DisplayDialog("Forge Game", "Арт подземелья сгенерирован в " + Dir, "OK"); }
 
@@ -55,8 +69,21 @@ namespace ForgeGame.EditorTools
             Make(force, SideCeiling, MakeSideCeiling, 128f);
             Make(force, SideHeroA, MakeSideHeroA, 128f);
             Make(force, SideHeroB, MakeSideHeroB, 128f);
+            Make(force, EnemyRat, MakeEnemyRat, 128f);
+            Make(force, EnemyGoblin, MakeEnemyGoblin, 128f);
+            Make(force, EnemyBrute, MakeEnemyBrute, 128f);
+            Make(force, AbStrike, MakeAbStrike, 100f);
+            Make(force, AbBreak, MakeAbBreak, 100f);
+            Make(force, AbGuard, MakeAbGuard, 100f);
+            Make(force, AbLunge, MakeAbLunge, 100f);
+            Make(force, AbHeal, MakeAbHeal, 100f);
+            Make(force, HpBar, MakeHpBar, 100f);
+            Make(force, BtnPlate, MakeBtnPlate, 100f);
+            Make(force, PortraitKnight, MakePortraitKnight, 100f);
+            Make(force, PortraitCompanion, MakePortraitCompanion, 100f);
             SetFullRect(Floor2); // floor is tiled at runtime → needs a full-rect sprite mesh
             SetFullRect(SideWall); SetFullRect(SideFloor); SetFullRect(SideCeiling);
+            SetPivotLeft(HpBar); // fill scales from the left edge
         }
 
         // ---- Hero, back view ----
@@ -418,6 +445,230 @@ namespace ForgeGame.EditorTools
             c.Tri((int)(w * 0.50f), (int)(h * 0.94f), (int)(w * 0.14f), (int)(h * 0.28f), hood);            // hood peak
             c.Disc((int)(w * 0.63f), (int)(h * 0.70f), (int)(w * 0.045f), skin);                            // face (right)
             c.Save(SideHeroB, 128f);
+        }
+
+        // ================= Combat enemies (facing LEFT) =================
+
+        private static void MakeEnemyRat()
+        {
+            var c = new PixelCanvas(140, 96); int w = c.w, h = c.h;
+            var fur = new Color(0.30f, 0.26f, 0.24f);
+            var furHi = new Color(0.42f, 0.37f, 0.34f);
+            var dark = new Color(0.16f, 0.13f, 0.12f);
+            // Long tail curling to the right (behind).
+            c.Line((int)(w * 0.62f), (int)(h * 0.30f), (int)(w * 0.96f), (int)(h * 0.55f), 3, dark);
+            // Body (low, hunched) — head points LEFT.
+            c.Disc((int)(w * 0.45f), (int)(h * 0.36f), (int)(w * 0.24f), fur);
+            c.Disc((int)(w * 0.24f), (int)(h * 0.32f), (int)(w * 0.15f), fur);        // head toward left
+            c.Radial((int)(w * 0.42f), (int)(h * 0.46f), w * 0.20f, new Color(furHi.r, furHi.g, furHi.b, 0.7f), 1.7f);
+            c.Tri((int)(w * 0.22f), (int)(h * 0.66f), 6, (int)(h * 0.22f), fur);      // ear
+            // Snout + red eye.
+            c.Tri((int)(w * 0.06f), (int)(h * 0.30f), 5, (int)(w * 0.14f), fur);
+            c.Disc((int)(w * 0.18f), (int)(h * 0.36f), 3, new Color(0.9f, 0.2f, 0.15f));
+            // Little legs.
+            c.Rect((int)(w * 0.34f), 0, (int)(w * 0.40f), (int)(h * 0.18f), dark);
+            c.Rect((int)(w * 0.52f), 0, (int)(w * 0.58f), (int)(h * 0.18f), dark);
+            c.Save(EnemyRat, 128f);
+        }
+
+        private static void MakeEnemyGoblin()
+        {
+            var c = new PixelCanvas(120, 180); int w = c.w, h = c.h;
+            var skin = new Color(0.36f, 0.44f, 0.28f);
+            var skinHi = new Color(0.48f, 0.57f, 0.36f);
+            var rag = new Color(0.30f, 0.24f, 0.18f);
+            var metal = new Color(0.60f, 0.63f, 0.70f);
+            var dark = new Color(0.14f, 0.16f, 0.11f);
+            // Legs.
+            c.Rect((int)(w * 0.40f), 0, (int)(w * 0.50f), (int)(h * 0.30f), rag);
+            c.Rect((int)(w * 0.54f), 0, (int)(w * 0.64f), (int)(h * 0.28f), rag);
+            // Hunched torso.
+            c.Rect((int)(w * 0.36f), (int)(h * 0.28f), (int)(w * 0.68f), (int)(h * 0.58f), skin);
+            c.Radial((int)(w * 0.5f), (int)(h * 0.46f), w * 0.22f, new Color(skinHi.r, skinHi.g, skinHi.b, 0.6f), 1.7f);
+            c.Rect((int)(w * 0.36f), (int)(h * 0.40f), (int)(w * 0.68f), (int)(h * 0.46f), rag); // belt/rag
+            // Head (looking left) + pointed ear + red eye.
+            c.Disc((int)(w * 0.46f), (int)(h * 0.66f), (int)(w * 0.15f), skin);
+            c.Tri((int)(w * 0.64f), (int)(h * 0.78f), 7, (int)(h * 0.12f), skin);            // ear right
+            c.Disc((int)(w * 0.40f), (int)(h * 0.68f), 3, new Color(0.95f, 0.75f, 0.15f));   // eye
+            // Arm holding a crude blade pointing LEFT (toward party).
+            c.Line((int)(w * 0.40f), (int)(h * 0.52f), (int)(w * 0.16f), (int)(h * 0.44f), 4, skin);
+            c.Tri((int)(w * 0.02f), (int)(h * 0.44f), 5, (int)(w * 0.20f), metal);           // blade tip left
+            c.Save(EnemyGoblin, 128f);
+        }
+
+        private static void MakeEnemyBrute()
+        {
+            var c = new PixelCanvas(190, 210); int w = c.w, h = c.h;
+            var hide = new Color(0.34f, 0.28f, 0.30f);
+            var hideHi = new Color(0.46f, 0.39f, 0.41f);
+            var dark = new Color(0.16f, 0.13f, 0.14f);
+            var iron = new Color(0.30f, 0.30f, 0.34f);
+            // Thick legs.
+            c.Rect((int)(w * 0.36f), 0, (int)(w * 0.48f), (int)(h * 0.34f), dark);
+            c.Rect((int)(w * 0.54f), 0, (int)(w * 0.66f), (int)(h * 0.32f), dark);
+            // Massive torso + shoulders.
+            c.Rect((int)(w * 0.28f), (int)(h * 0.30f), (int)(w * 0.74f), (int)(h * 0.66f), hide);
+            c.Disc((int)(w * 0.30f), (int)(h * 0.64f), (int)(w * 0.14f), hide);
+            c.Disc((int)(w * 0.72f), (int)(h * 0.64f), (int)(w * 0.14f), hide);
+            c.Radial((int)(w * 0.5f), (int)(h * 0.5f), w * 0.30f, new Color(hideHi.r, hideHi.g, hideHi.b, 0.6f), 1.7f);
+            // Small head sunk between shoulders (left-facing), glaring eye.
+            c.Disc((int)(w * 0.44f), (int)(h * 0.72f), (int)(w * 0.10f), hide);
+            c.Disc((int)(w * 0.38f), (int)(h * 0.73f), 3, new Color(0.95f, 0.35f, 0.15f));
+            // Iron-banded club in the left fist.
+            c.Line((int)(w * 0.34f), (int)(h * 0.44f), (int)(w * 0.10f), (int)(h * 0.30f), 6, dark);
+            c.Rect((int)(w * 0.02f), (int)(h * 0.16f), (int)(w * 0.18f), (int)(h * 0.40f), iron); // club head
+            c.Save(EnemyBrute, 128f);
+        }
+
+        // ================= Ability icons (transparent) =================
+
+        private static readonly Color IcSteel = new Color(0.78f, 0.82f, 0.90f);
+        private static readonly Color IcSteelD = new Color(0.48f, 0.52f, 0.60f);
+        private static readonly Color IcGold = new Color(0.95f, 0.78f, 0.35f);
+
+        private static void MakeAbStrike()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // A bright diagonal slash arc + a thin sword.
+            c.Line((int)(w * 0.18f), (int)(h * 0.22f), (int)(w * 0.82f), (int)(h * 0.86f), 5, IcSteelD);
+            c.Line((int)(w * 0.22f), (int)(h * 0.20f), (int)(w * 0.84f), (int)(h * 0.80f), 2, IcSteel);
+            c.Tri((int)(w * 0.86f), (int)(h * 0.96f), 7, (int)(h * 0.34f), new Color(1f, 0.95f, 0.8f, 0.9f)); // spark tip
+            c.Save(AbStrike, 100f);
+        }
+
+        private static void MakeAbBreak()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Hammer head + impact burst (stagger).
+            c.Rect((int)(w * 0.30f), (int)(h * 0.58f), (int)(w * 0.70f), (int)(h * 0.82f), IcSteelD);
+            c.Rect((int)(w * 0.30f), (int)(h * 0.74f), (int)(w * 0.70f), (int)(h * 0.82f), IcSteel);
+            c.Rect((int)(w * 0.46f), (int)(h * 0.20f), (int)(w * 0.54f), (int)(h * 0.58f), new Color(0.34f, 0.22f, 0.12f)); // haft
+            for (int i = 0; i < 6; i++) { float a = i * Mathf.PI / 3f; c.Line(w / 2, (int)(h * 0.2f), w / 2 + (int)(Mathf.Cos(a) * 26), (int)(h * 0.2f) + (int)(Mathf.Sin(a) * 26), 2, new Color(1f, 0.8f, 0.3f, 0.8f)); }
+            c.Save(AbBreak, 100f);
+        }
+
+        private static void MakeAbGuard()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Shield: rounded top, pointed bottom.
+            c.Rect((int)(w * 0.24f), (int)(h * 0.40f), (int)(w * 0.76f), (int)(h * 0.86f), IcSteelD);
+            c.Disc((int)(w * 0.5f), (int)(h * 0.86f), (int)(w * 0.26f), IcSteelD);
+            c.Tri((int)(w * 0.5f), (int)(h * 0.06f), (int)(w * 0.26f), (int)(h * 0.40f), IcSteelD); // point down
+            c.Rect((int)(w * 0.30f), (int)(h * 0.46f), (int)(w * 0.70f), (int)(h * 0.52f), IcSteel);
+            c.Rect((int)(w * 0.47f), (int)(h * 0.20f), (int)(w * 0.53f), (int)(h * 0.80f), new Color(1f, 1f, 1f, 0.35f));
+            c.Save(AbGuard, 100f);
+        }
+
+        private static void MakeAbLunge()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Long thrust arrow pointing left (reaches the back rank).
+            c.Line((int)(w * 0.92f), (int)(h * 0.5f), (int)(w * 0.24f), (int)(h * 0.5f), 4, IcSteel);
+            // Left-pointing arrowhead (apex at x≈0.06w, widening to the right).
+            int hx0 = (int)(w * 0.06f), hLen = (int)(w * 0.20f), hHalf = (int)(h * 0.22f);
+            for (int i = 0; i < hLen; i++)
+            {
+                int hb = (int)(hHalf * (i / (float)hLen));
+                c.Row(hx0 + i, hx0 + i + 1, h / 2 - hb, IcSteel);
+                c.Row(hx0 + i, hx0 + i + 1, h / 2 + hb, IcSteel);
+                c.Row(hx0 + i, hx0 + i + 1, h / 2, IcSteel);
+            }
+            c.Save(AbLunge, 100f);
+        }
+
+        private static void MakeAbHeal()
+        {
+            var c = new PixelCanvas(96, 96); int w = c.w, h = c.h;
+            // Green mend cross with a soft glow.
+            c.Radial(w / 2, h / 2, w * 0.42f, new Color(0.4f, 0.9f, 0.5f, 0.35f), 1.8f);
+            var green = new Color(0.45f, 0.85f, 0.45f);
+            c.Rect((int)(w * 0.42f), (int)(h * 0.22f), (int)(w * 0.58f), (int)(h * 0.78f), green);
+            c.Rect((int)(w * 0.22f), (int)(h * 0.42f), (int)(w * 0.78f), (int)(h * 0.58f), green);
+            c.Save(AbHeal, 100f);
+        }
+
+        private static void MakeHpBar()
+        {
+            var c = new PixelCanvas(100, 16);
+            c.Rect(0, 0, c.w, c.h, Color.white); // plain white; tinted per use, left pivot set after import
+            c.Save(HpBar, 100f);
+        }
+
+        private static void MakeBtnPlate()
+        {
+            var c = new PixelCanvas(220, 120); int w = c.w, h = c.h;
+            c.VGrad(0, 0, w, h, new Color(0.16f, 0.14f, 0.13f), new Color(0.26f, 0.23f, 0.21f));
+            c.Grain(0, 0, w, h, false, 0.08f, 19);
+            int b = 6;
+            var edge = new Color(0.45f, 0.40f, 0.34f);
+            c.Rect(0, 0, w, b, edge); c.Rect(0, h - b, w, h, edge); c.Rect(0, 0, b, h, edge); c.Rect(w - b, 0, w, h, edge);
+            c.Save(BtnPlate, 100f);
+        }
+
+        // ---- Roster portraits (framed bust, 128²) ----
+        private static void MakePortraitKnight()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            var steel = new Color(0.55f, 0.58f, 0.64f);
+            var steelHi = new Color(0.80f, 0.83f, 0.90f);
+            var dark = new Color(0.10f, 0.10f, 0.12f);
+            c.VGrad(0, 0, w, h, new Color(0.13f, 0.12f, 0.14f), new Color(0.20f, 0.18f, 0.22f)); // bg
+            // Shoulders (pauldrons).
+            c.Disc((int)(w * 0.24f), (int)(h * 0.24f), (int)(w * 0.20f), steel);
+            c.Disc((int)(w * 0.76f), (int)(h * 0.24f), (int)(w * 0.20f), steel);
+            c.Rect((int)(w * 0.22f), (int)(h * 0.06f), (int)(w * 0.78f), (int)(h * 0.34f), steel);
+            // Helmet.
+            c.Disc(w / 2, (int)(h * 0.66f), (int)(w * 0.26f), steel);
+            c.Rect((int)(w * 0.26f), (int)(h * 0.44f), (int)(w * 0.74f), (int)(h * 0.68f), steel);
+            c.Radial((int)(w * 0.42f), (int)(h * 0.72f), w * 0.22f, new Color(steelHi.r, steelHi.g, steelHi.b, 0.7f), 1.7f);
+            // Visor slit + comb.
+            c.Rect((int)(w * 0.30f), (int)(h * 0.56f), (int)(w * 0.70f), (int)(h * 0.61f), dark);
+            c.Rect((int)(w * 0.48f), (int)(h * 0.66f), (int)(w * 0.52f), (int)(h * 0.90f), steelHi);
+            Frame(c, new Color(0.42f, 0.30f, 0.16f));
+            c.Save(PortraitKnight, 100f);
+        }
+
+        private static void MakePortraitCompanion()
+        {
+            var c = new PixelCanvas(128, 128); int w = c.w, h = c.h;
+            var hood = new Color(0.22f, 0.27f, 0.29f);
+            var hoodHi = new Color(0.32f, 0.38f, 0.40f);
+            var skin = new Color(0.80f, 0.62f, 0.46f);
+            var dark = new Color(0.08f, 0.10f, 0.10f);
+            c.VGrad(0, 0, w, h, new Color(0.13f, 0.12f, 0.14f), new Color(0.18f, 0.19f, 0.20f)); // bg
+            // Shoulders / cloak.
+            c.Rect((int)(w * 0.18f), (int)(h * 0.04f), (int)(w * 0.82f), (int)(h * 0.36f), hood);
+            c.Disc((int)(w * 0.22f), (int)(h * 0.28f), (int)(w * 0.18f), hood);
+            c.Disc((int)(w * 0.78f), (int)(h * 0.28f), (int)(w * 0.18f), hood);
+            // Hood.
+            c.Disc(w / 2, (int)(h * 0.66f), (int)(w * 0.28f), hood);
+            c.Tri(w / 2, (int)(h * 0.98f), (int)(w * 0.22f), (int)(h * 0.36f), hood);
+            c.Rect((int)(w * 0.22f), (int)(h * 0.44f), (int)(w * 0.78f), (int)(h * 0.70f), hood);
+            c.Radial((int)(w * 0.42f), (int)(h * 0.72f), w * 0.22f, new Color(hoodHi.r, hoodHi.g, hoodHi.b, 0.6f), 1.7f);
+            // Face in shadow of the hood.
+            c.Disc(w / 2, (int)(h * 0.58f), (int)(w * 0.15f), dark);
+            c.Disc(w / 2, (int)(h * 0.56f), (int)(w * 0.11f), skin);
+            Frame(c, new Color(0.30f, 0.34f, 0.20f));
+            c.Save(PortraitCompanion, 100f);
+        }
+
+        // A simple inset border used by the portraits.
+        private static void Frame(PixelCanvas c, Color edge)
+        {
+            int w = c.w, h = c.h, b = 6;
+            c.Rect(0, 0, w, b, edge); c.Rect(0, h - b, w, h, edge);
+            c.Rect(0, 0, b, h, edge); c.Rect(w - b, 0, w, h, edge);
+        }
+
+        private static void SetPivotLeft(string path)
+        {
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            if (imp == null) return;
+            var s = new TextureImporterSettings();
+            imp.ReadTextureSettings(s);
+            s.spriteAlignment = (int)SpriteAlignment.LeftCenter;
+            imp.SetTextureSettings(s);
+            imp.SaveAndReimport();
         }
 
         private static void SetFullRect(string path)

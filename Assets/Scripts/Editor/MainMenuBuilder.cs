@@ -118,6 +118,7 @@ namespace ForgeGame.EditorTools
             // --- Overlays (siblings of SafeArea so they cover the whole screen) ---
             var settings = BuildSettingsPanel(canvasRt, settingsService, out var settingsCtrl, out var settingsBack);
             var credits = BuildCreditsPanel(canvasRt, out var creditsBack);
+            var load = BuildLoadPanel(canvasRt);
             var modal = BuildConfirmationModal(canvasRt);
             var loadingBlocker = BuildLoadingBlocker(canvasRt);
             var fader = BuildScreenFader(canvasRt);
@@ -135,6 +136,7 @@ namespace ForgeGame.EditorTools
                 SetRef(so, "audioManager", _audio);
                 SetStr(so, "forgeSceneName", StartSceneName);
                 SetRef(so, "continueButton", buttons.Continue);
+                SetRef(so, "loadButton", buttons.Load);
                 SetRef(so, "newGameButton", buttons.NewGame);
                 SetRef(so, "settingsButton", buttons.Settings);
                 SetRef(so, "creditsButton", buttons.Credits);
@@ -144,6 +146,12 @@ namespace ForgeGame.EditorTools
                 SetRef(so, "settingsBackButton", settingsBack);
                 SetRef(so, "creditsPanelRoot", credits.gameObject);
                 SetRef(so, "creditsBackButton", creditsBack);
+                SetRef(so, "loadPanelRoot", load.panel.gameObject);
+                SetRef(so, "loadBackButton", load.back);
+                SetObjArray(so, "slotNameLabels", load.names);
+                SetObjArray(so, "slotDateLabels", load.dates);
+                SetObjArray(so, "slotLoadButtons", load.loads);
+                SetObjArray(so, "slotDeleteButtons", load.deletes);
                 SetRef(so, "confirmationModal", modal);
                 SetRef(so, "loadingBlocker", loadingBlocker.gameObject);
                 SetRef(so, "versionText", footer.Version);
@@ -153,6 +161,7 @@ namespace ForgeGame.EditorTools
             // Panels start hidden; runtime code also enforces this on Start.
             settings.gameObject.SetActive(false);
             credits.gameObject.SetActive(false);
+            load.panel.gameObject.SetActive(false);
             loadingBlocker.gameObject.SetActive(false);
 
             // --- Save + register ---
@@ -544,14 +553,14 @@ namespace ForgeGame.EditorTools
 
         private struct MainButtonRefs
         {
-            public Button Continue, NewGame, Settings, Credits, Quit;
+            public Button Continue, Load, NewGame, Settings, Credits, Quit;
         }
 
         private static MainButtonRefs BuildMainButtons(RectTransform safeArea)
         {
             var container = NewRect("MainButtons", safeArea);
             Anchor(container, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                new Vector2(0, -40), new Vector2(420, 400));
+                new Vector2(0, -40), new Vector2(420, 470));
             var vlg = container.gameObject.AddComponent<VerticalLayoutGroup>();
             vlg.childAlignment = TextAnchor.MiddleLeft;
             vlg.spacing = 16;
@@ -559,11 +568,12 @@ namespace ForgeGame.EditorTools
             vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
 
             var cont = BuildMenuButton(container, "Продолжить", 420, 66, out var lCont); Localize(lCont, "menu.continue");
+            var load = BuildMenuButton(container, "Загрузить", 420, 66, out var lLoad); Localize(lLoad, "menu.load");
             var ng = BuildMenuButton(container, "Новая игра", 420, 66, out var lNg); Localize(lNg, "menu.new_game");
             var set = BuildMenuButton(container, "Настройки", 420, 66, out var lSet); Localize(lSet, "menu.settings");
             var cr = BuildMenuButton(container, "Авторы", 420, 66, out var lCr); Localize(lCr, "menu.credits");
             var quit = BuildMenuButton(container, "Выход", 420, 66, out var lQuit); Localize(lQuit, "menu.quit");
-            return new MainButtonRefs { Continue = cont, NewGame = ng, Settings = set, Credits = cr, Quit = quit };
+            return new MainButtonRefs { Continue = cont, Load = load, NewGame = ng, Settings = set, Credits = cr, Quit = quit };
         }
 
         private struct FooterRefs { public TMP_Text Version; }
@@ -859,6 +869,76 @@ namespace ForgeGame.EditorTools
             return panel;
         }
 
+        private struct LoadPanelRefs
+        {
+            public RectTransform panel;
+            public Button back;
+            public TMP_Text[] names;
+            public TMP_Text[] dates;
+            public Button[] loads;
+            public Button[] deletes;
+        }
+
+        private static LoadPanelRefs BuildLoadPanel(RectTransform canvas)
+        {
+            const int N = 6; // must match LocalSaveGameService slot count
+            var refs = new LoadPanelRefs
+            {
+                names = new TMP_Text[N], dates = new TMP_Text[N],
+                loads = new Button[N], deletes = new Button[N],
+            };
+
+            var panel = NewRect("LoadPanel", canvas);
+            Stretch(panel);
+            AddImage(panel, new Color(0.02f, 0.018f, 0.016f, 0.82f), null, true);
+            refs.panel = panel;
+
+            var window = NewRect("Window", panel);
+            Anchor(window, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(1080, 860));
+            AddImage(window, WindowDark, null, true);
+            AddFrame(window);
+
+            var titleRt = NewRect("Title", window);
+            Anchor(titleRt, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0, -46), new Vector2(900, 60));
+            Localize(AddText(titleRt, "Загрузить игру", 46, TitleCol, TextAlignmentOptions.Center), "menu.load_title");
+
+            float y0 = 250f, step = 92f;
+            for (int i = 0; i < N; i++)
+            {
+                var row = NewRect("Row" + i, window);
+                Anchor(row, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                    new Vector2(0, y0 - i * step), new Vector2(960, 80));
+                AddImage(row, new Color(0.05f, 0.045f, 0.04f, 0.6f), null, false);
+
+                var nameRt = NewRect("Name", row);
+                Anchor(nameRt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(30, 6), new Vector2(360, 42));
+                refs.names[i] = AddText(nameRt, "", 28, TextLight, TextAlignmentOptions.Left);
+
+                var dateRt = NewRect("Date", row);
+                Anchor(dateRt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(30, -22), new Vector2(360, 30));
+                refs.dates[i] = AddText(dateRt, "", 20, TextDim, TextAlignmentOptions.Left);
+
+                var loadHost = NewRect("LoadHost", row);
+                Anchor(loadHost, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-330, 0), new Vector2(190, 56));
+                refs.loads[i] = BuildMenuButton(loadHost, "Загрузить", 190, 56, out var lLoad); Localize(lLoad, "save.load");
+                Stretch((RectTransform)refs.loads[i].transform);
+
+                var delHost = NewRect("DelHost", row);
+                Anchor(delHost, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-120, 0), new Vector2(180, 56));
+                refs.deletes[i] = BuildMenuButton(delHost, "Удалить", 180, 56, out var lDel); Localize(lDel, "save.delete");
+                Stretch((RectTransform)refs.deletes[i].transform);
+            }
+
+            var foot = NewRect("Footer", window);
+            Anchor(foot, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0, 44), new Vector2(300, 58));
+            refs.back = BuildMenuButton(foot, "Назад", 300, 58, out var lBack); Localize(lBack, "common.back");
+
+            return refs;
+        }
+
         private static void AddCreditLine(RectTransform parent, string text, float size, Color color)
         {
             var rt = NewRect("Line", parent);
@@ -1151,6 +1231,14 @@ namespace ForgeGame.EditorTools
         {
             var p = so.FindProperty(prop);
             if (p != null) p.stringValue = value;
+        }
+
+        private static void SetObjArray(SerializedObject so, string prop, UnityEngine.Object[] vals)
+        {
+            var p = so.FindProperty(prop);
+            if (p == null) { Debug.LogWarning($"[MainMenuBuilder] Missing array '{prop}' on {so.targetObject.GetType().Name}."); return; }
+            p.arraySize = vals.Length;
+            for (int i = 0; i < vals.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = vals[i];
         }
 
         private static void EnsureFolder(string path)

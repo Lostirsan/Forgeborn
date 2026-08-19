@@ -15,12 +15,14 @@ namespace ForgeGame.UI.Smithy
         [SerializeField] private TMP_Text objectiveText;
         [SerializeField] private Button inventoryButton;
         [SerializeField] private Button journalButton;
+        [SerializeField] private Button dungeonButton;
 
         private void OnEnable()
         {
             if (inventory != null) inventory.InventoryChanged += Refresh;
             if (inventoryButton != null) inventoryButton.onClick.AddListener(OpenInventory);
             if (journalButton != null) journalButton.onClick.AddListener(OpenJournal);
+            if (dungeonButton != null) dungeonButton.onClick.AddListener(OpenDungeonPrep);
             Refresh();
         }
 
@@ -29,6 +31,7 @@ namespace ForgeGame.UI.Smithy
             if (inventory != null) inventory.InventoryChanged -= Refresh;
             if (inventoryButton != null) inventoryButton.onClick.RemoveListener(OpenInventory);
             if (journalButton != null) journalButton.onClick.RemoveListener(OpenJournal);
+            if (dungeonButton != null) dungeonButton.onClick.RemoveListener(OpenDungeonPrep);
         }
 
         public void SetObjective(string text)
@@ -44,5 +47,6 @@ namespace ForgeGame.UI.Smithy
 
         private void OpenInventory() => controller?.OpenPanel(PanelId.Inventory);
         private void OpenJournal() => controller?.OpenPanel(PanelId.Journal);
+        private void OpenDungeonPrep() => controller?.OpenPanel(PanelId.DungeonPrep);
     }
 }
