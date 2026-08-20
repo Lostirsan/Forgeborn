@@ -7,6 +7,10 @@ namespace ForgeGame.Data
         public const string Bronze = "bronze";
         public const string BronzeSword = "bronze_sword";
 
+        // Dungeon raw resources (the only things that drop below).
+        public const string Copper = "copper";
+        public const string Tin = "tin";
+
         // Legacy materials (kept in the database, no longer part of production).
         public const string Iron = "iron";
         public const string Steel = "steel";

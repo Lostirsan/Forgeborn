@@ -70,6 +70,9 @@ namespace ForgeGame.EditorTools
             var itemCoal = Item(SmithyIds.Coal, "Уголь", ItemType.Fuel, 2, new Color(0.15f, 0.15f, 0.15f), "Топливо для печи и горна.");
             var itemFlux = Item(SmithyIds.Flux, "Флюс", ItemType.Flux, 4, new Color(0.8f, 0.75f, 0.5f), "Снижает примеси при плавке.");
             var itemBronze = Item(SmithyIds.Bronze, "Бронза", ItemType.Ingot, 8, new Color(0.72f, 0.48f, 0.24f), "Слиток бронзы для переплавки в форму меча.");
+            // Dungeon raw resources.
+            var itemCopper = Item(SmithyIds.Copper, "Медь", ItemType.Ore, 4, new Color(0.85f, 0.45f, 0.25f), "Медь, добытая в подземелье. Сплавляется с оловом в бронзу.");
+            var itemTin = Item(SmithyIds.Tin, "Олово", ItemType.Ore, 4, new Color(0.78f, 0.80f, 0.84f), "Олово, добытое в подземелье. Сплавляется с медью в бронзу.");
 
             // ---- Blueprints ----
             FoundryArtGenerator.EnsureAll(); // make sure weapon icons exist before wiring previews
@@ -118,7 +121,7 @@ namespace ForgeGame.EditorTools
             db.Configure(
                 new List<MaterialData> { bronze, iron, steel, silver },
                 new List<OreData> { ironOre, steelOre, silverOre },
-                new List<ItemData> { itemBronze, itemIronOre, itemSteelOre, itemSilverOre, itemCoal, itemFlux },
+                new List<ItemData> { itemBronze, itemCopper, itemTin, itemIronOre, itemSteelOre, itemSilverOre, itemCoal, itemFlux },
                 new List<WeaponBlueprintData> { bronzeSword, sword, bronzeSickle, bronzeHammer, bronzeScythe, bronzeKnife, bronzePitchfork },
                 new List<WeaponComponentData> { guard, handle, pommel },
                 defects);

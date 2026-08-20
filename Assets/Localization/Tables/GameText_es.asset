@@ -587,6 +587,10 @@ MonoBehaviour:
     m_Localized: Mano derecha
     m_Metadata:
       m_Items: []
+  - m_Id: 2615660008955904
+    m_Localized: "A la herrer\xEDa"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

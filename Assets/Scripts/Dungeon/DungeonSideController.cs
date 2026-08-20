@@ -41,8 +41,11 @@ namespace ForgeGame.Dungeon
         [SerializeField] private Sprite oreSprite;
         [SerializeField] private DungeonHotbar hotbar;
         [SerializeField] private GameObject inventoryPanel;
-        [SerializeField] private string oreItemId = "iron_ore";
-        [SerializeField] private float oreSpawnChance = 0.55f;
+        [SerializeField] private UnityEngine.UI.Button homeButton; // return to the smithy (loot banks on arrival)
+        [SerializeField] private string oreItemId = "copper";
+        [SerializeField] private string[] oreItemIds; // only these drop below: copper / tin / bronze
+        [SerializeField] private Color[] oreTints;    // parallel tint per ore type
+        [SerializeField] private float oreSpawnChance = 0.15f; // rare: most floor blocks carry no ore
         [SerializeField] private float pickupRadius = 1.2f;
 
         [Header("Combat")]
@@ -64,6 +67,7 @@ namespace ForgeGame.Dungeon
 
         private void Awake()
         {
+            if (homeButton != null) homeButton.onClick.AddListener(GoHome);
             if (cam == null) cam = Camera.main;
             _halfW = cam.orthographicSize * cam.aspect;
             if (party != null) { _partyHome = party.position; _partyX = party.position.x; }
@@ -185,6 +189,10 @@ namespace ForgeGame.Dungeon
             _nextEncounterAt = _dist + Random.Range(encounterMinGap, encounterMaxGap);
         }
 
+        // Return to the smithy — everything gathered this run is banked into the inventory
+        // there (via ExpeditionResult) and saved.
+        public void GoHome() => SceneManager.LoadScene(smithySceneName);
+
         private void FlickerTorch()
         {
             float t = Time.time;
@@ -239,7 +247,15 @@ namespace ForgeGame.Dungeon
                 ore.transform.localScale = Vector3.one * 0.8f;
                 var osr = ore.AddComponent<SpriteRenderer>(); osr.sprite = oreSprite; osr.sortingOrder = 2;
                 var col = ore.AddComponent<CircleCollider2D>(); col.isTrigger = true; col.radius = 0.6f;
-                var doc = ore.AddComponent<DungeonOre>(); doc.itemId = oreItemId; doc.amount = Random.Range(1, 4);
+                var doc = ore.AddComponent<DungeonOre>(); doc.amount = Random.Range(1, 4);
+                // Only copper / tin / bronze drop, each tinted so they read apart.
+                if (oreItemIds != null && oreItemIds.Length > 0)
+                {
+                    int ti = Random.Range(0, oreItemIds.Length);
+                    doc.itemId = oreItemIds[ti];
+                    if (oreTints != null && ti < oreTints.Length) osr.color = oreTints[ti];
+                }
+                else doc.itemId = oreItemId;
             }
             _segIndex++;
 

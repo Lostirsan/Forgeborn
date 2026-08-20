@@ -186,6 +186,7 @@ namespace ForgeGame.EditorTools
             // ---- Dungeon ----
             new[]{"dungeon.depth","Глубина: {0} м","Depth: {0} m","Profundidad: {0} m","गहराई: {0} मी"},
             new[]{"dungeon.inv_close","I — закрыть","I — close","I — cerrar","I — बंद करें"},
+            new[]{"dungeon.home","В кузню","To smithy","A la herrería","लोहारखाने"},
 
             // ---- Pause menu ----
             new[]{"pause.title","Пауза","Paused","Pausa","विराम"},

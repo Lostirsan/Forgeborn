@@ -33,7 +33,8 @@ namespace ForgeGame.Dungeon
         [Header("Loot / links")]
         [SerializeField] private DungeonHotbar hotbar;
         [SerializeField] private Sprite oreSprite;
-        [SerializeField] private string oreItemId = "iron_ore";
+        [SerializeField] private string oreItemId = "copper";
+        [SerializeField] private string[] oreItemIds; // copper / tin / bronze
         [SerializeField] private DungeonSideController controller;
 
         [Header("HUD")]
@@ -415,8 +416,10 @@ namespace ForgeGame.Dungeon
             _phase = Phase.Ended; _win = true; _timer = BannerTime;
             HideAbilities();
             int loot = Random.Range(2, 5);
-            if (hotbar != null) hotbar.Add(oreItemId, oreSprite, loot);
-            ExpeditionResult.Add(oreItemId, loot); // banked into the smithy on return
+            string dropId = oreItemIds != null && oreItemIds.Length > 0
+                ? oreItemIds[Random.Range(0, oreItemIds.Length)] : oreItemId;
+            if (hotbar != null) hotbar.Add(dropId, oreSprite, loot);
+            ExpeditionResult.Add(dropId, loot); // banked into the smithy on return
             ShowBanner(Loc.Format("combat.victory", loot));
             if (turnLabel != null) turnLabel.text = "";
         }

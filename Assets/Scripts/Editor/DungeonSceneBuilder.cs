@@ -113,6 +113,7 @@ namespace ForgeGame.EditorTools
             var canvasRt = (RectTransform)canvasGo.transform;
 
             var depthLabel = AddText(canvasRt, font, "Глубина: 0 м", 34, new Vector2(0f, 1f), new Vector2(40, -40), new Vector2(400, 50), TextAlignmentOptions.TopLeft);
+            var homeBtn = AddHudButton(canvasRt, font, "dungeon.home", btnPlate, new Vector2(1f, 1f), new Vector2(-40, -40), new Vector2(260, 66));
             var hotbar = BuildInventoryPanel(canvasRt, font, out var invPanel);
 
             BuildEventSystem();
@@ -134,6 +135,10 @@ namespace ForgeGame.EditorTools
             SetRef(so, "oreSprite", ore);
             SetRef(so, "hotbar", hotbar);
             SetRef(so, "inventoryPanel", invPanel);
+            SetRef(so, "homeButton", homeBtn);
+            SetStrArray(so, "oreItemIds", OreIds);
+            SetColorArray(so, "oreTints", OreTints);
+            SetFloat(so, "oreSpawnChance", 0.15f); // rare floor ore (≈85% of blocks empty)
             SetStr(so, "smithySceneName", "Smithy");
 
             // Combat HUD + system (references the party/heroes above and the shared hotbar).
@@ -355,7 +360,8 @@ namespace ForgeGame.EditorTools
             SetArray(cso, "abilityIcons", abIcons);
             SetRef(cso, "hotbar", hotbar);
             SetRef(cso, "oreSprite", ore);
-            SetStr(cso, "oreItemId", "iron_ore");
+            SetStr(cso, "oreItemId", "copper");
+            SetStrArray(cso, "oreItemIds", OreIds);
             SetRef(cso, "controller", controller);
             SetRef(cso, "abilityBar", barGo);
             SetArray(cso, "abilityButtons", buttons);
@@ -493,6 +499,47 @@ namespace ForgeGame.EditorTools
                 p.GetArrayElementAtIndex(i).objectReferenceValue = items[i];
         }
 
+        // The only resources that drop below, and their ore tints.
+        private static readonly string[] OreIds = { "copper", "tin", "bronze" };
+        private static readonly Color[] OreTints =
+        {
+            new Color(0.85f, 0.45f, 0.25f), // copper
+            new Color(0.80f, 0.82f, 0.86f), // tin
+            new Color(0.72f, 0.52f, 0.30f), // bronze
+        };
+
+        private static void SetStrArray(SerializedObject so, string prop, string[] items)
+        {
+            var p = so.FindProperty(prop);
+            if (p == null) { Debug.LogWarning("[DungeonSceneBuilder] Missing array field " + prop); return; }
+            p.arraySize = items.Length;
+            for (int i = 0; i < items.Length; i++) p.GetArrayElementAtIndex(i).stringValue = items[i];
+        }
+
+        private static void SetColorArray(SerializedObject so, string prop, Color[] items)
+        {
+            var p = so.FindProperty(prop);
+            if (p == null) { Debug.LogWarning("[DungeonSceneBuilder] Missing array field " + prop); return; }
+            p.arraySize = items.Length;
+            for (int i = 0; i < items.Length; i++) p.GetArrayElementAtIndex(i).colorValue = items[i];
+        }
+
+        private static Button AddHudButton(RectTransform canvas, TMP_FontAsset font, string locKey, Sprite plate,
+            Vector2 anchor, Vector2 pos, Vector2 size)
+        {
+            var go = new GameObject("HudButton", typeof(RectTransform));
+            go.transform.SetParent(canvas, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = rt.pivot = anchor;
+            rt.anchoredPosition = pos; rt.sizeDelta = size;
+            var img = go.AddComponent<Image>();
+            img.sprite = plate; img.type = Image.Type.Sliced; img.color = Color.white;
+            var btn = go.AddComponent<Button>();
+            var lbl = AddText(rt, font, "", 28, new Vector2(0.5f, 0.5f), Vector2.zero, size - new Vector2(20, 10), TextAlignmentOptions.Center);
+            Localize(lbl, locKey);
+            return btn;
+        }
+
         private static float HalfH(Sprite s, float scale) => (s != null ? s.rect.height / s.pixelsPerUnit : 1.4f) * scale * 0.5f;
 
         private static Transform AddHero(Transform party, Sprite sprite, Vector3 localPos, float scale, int order)
@@ -531,6 +578,13 @@ namespace ForgeGame.EditorTools
         {
             var p = so.FindProperty(prop);
             if (p != null) p.objectReferenceValue = value;
+            else Debug.LogWarning("[DungeonSceneBuilder] Missing field " + prop);
+        }
+
+        private static void SetFloat(SerializedObject so, string prop, float value)
+        {
+            var p = so.FindProperty(prop);
+            if (p != null) p.floatValue = value;
             else Debug.LogWarning("[DungeonSceneBuilder] Missing field " + prop);
         }
 

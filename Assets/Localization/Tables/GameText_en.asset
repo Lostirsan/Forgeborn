@@ -586,6 +586,10 @@ MonoBehaviour:
     m_Localized: Right hand
     m_Metadata:
       m_Items: []
+  - m_Id: 2615660008955904
+    m_Localized: To smithy
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
